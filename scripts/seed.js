@@ -57,45 +57,47 @@ async function seed() {
     console.log("✅ Experiences seeded");
 
     // ── 3. SKILLS ────────────────────────────────────────────────
+    // iconUrl is intentionally empty — upload icons via Admin → Skills → Edit
+    // All icons will be stored on Cloudinary, not locally
     await db.collection("skills").deleteMany({});
     await db.collection("skills").insertMany([
       // Salesforce
-      { name: "Salesforce Admin", iconUrl: "/assets/img/skill/saleforce.svg", category: "salesforce", order: 1, createdAt: new Date() },
-      { name: "Apex",             iconUrl: "/assets/img/skill/apex.svg",      category: "salesforce", order: 2, createdAt: new Date() },
-      { name: "Flows",            iconUrl: "/assets/img/skill/saleforce.svg", category: "salesforce", order: 3, createdAt: new Date() },
-      { name: "LWC",              iconUrl: "/assets/img/skill/apex.svg",      category: "salesforce", order: 4, createdAt: new Date() },
-      { name: "Apex Trigger",     iconUrl: "/assets/img/skill/apex.svg",      category: "salesforce", order: 5, createdAt: new Date() },
-      { name: "Power BI",         iconUrl: "/assets/img/skill/PowerBI.svg",   category: "salesforce", order: 6, createdAt: new Date() },
+      { name: "Salesforce Admin", iconUrl: "", iconPublicId: "", category: "salesforce", order: 1, createdAt: new Date() },
+      { name: "Apex",             iconUrl: "", iconPublicId: "", category: "salesforce", order: 2, createdAt: new Date() },
+      { name: "Flows",            iconUrl: "", iconPublicId: "", category: "salesforce", order: 3, createdAt: new Date() },
+      { name: "LWC",              iconUrl: "", iconPublicId: "", category: "salesforce", order: 4, createdAt: new Date() },
+      { name: "Apex Trigger",     iconUrl: "", iconPublicId: "", category: "salesforce", order: 5, createdAt: new Date() },
+      { name: "Power BI",         iconUrl: "", iconPublicId: "", category: "salesforce", order: 6, createdAt: new Date() },
       // SQA
-      { name: "Manual Testing",   iconUrl: "/assets/img/skill/manual testing.svg", category: "sqa", order: 1, createdAt: new Date() },
-      { name: "WebdriverIO",      iconUrl: "/assets/img/skill/webdriverio.svg",     category: "sqa", order: 2, createdAt: new Date() },
-      { name: "Selenium",         iconUrl: "/assets/img/skill/selenium.svg",        category: "sqa", order: 3, createdAt: new Date() },
-      { name: "Postman",          iconUrl: "/assets/img/skill/postman.svg",         category: "sqa", order: 4, createdAt: new Date() },
-      { name: "Bug Reporting",    iconUrl: "/assets/img/skill/bugreport.svg",       category: "sqa", order: 5, createdAt: new Date() },
-      { name: "Test Case Design", iconUrl: "/assets/img/skill/testcasedesign.svg",  category: "sqa", order: 6, createdAt: new Date() },
-      { name: "STLC",             iconUrl: "/assets/img/skill/stlc.svg",            category: "sqa", order: 7, createdAt: new Date() },
-      { name: "API Testing",      iconUrl: "/assets/img/skill/api.svg",             category: "sqa", order: 8, createdAt: new Date() },
-      { name: "TestRail",         iconUrl: "/assets/img/skill/testrail.svg",        category: "sqa", order: 9, createdAt: new Date() },
+      { name: "Manual Testing",   iconUrl: "", iconPublicId: "", category: "sqa", order: 1, createdAt: new Date() },
+      { name: "WebdriverIO",      iconUrl: "", iconPublicId: "", category: "sqa", order: 2, createdAt: new Date() },
+      { name: "Selenium",         iconUrl: "", iconPublicId: "", category: "sqa", order: 3, createdAt: new Date() },
+      { name: "Postman",          iconUrl: "", iconPublicId: "", category: "sqa", order: 4, createdAt: new Date() },
+      { name: "Bug Reporting",    iconUrl: "", iconPublicId: "", category: "sqa", order: 5, createdAt: new Date() },
+      { name: "Test Case Design", iconUrl: "", iconPublicId: "", category: "sqa", order: 6, createdAt: new Date() },
+      { name: "STLC",             iconUrl: "", iconPublicId: "", category: "sqa", order: 7, createdAt: new Date() },
+      { name: "API Testing",      iconUrl: "", iconPublicId: "", category: "sqa", order: 8, createdAt: new Date() },
+      { name: "TestRail",         iconUrl: "", iconPublicId: "", category: "sqa", order: 9, createdAt: new Date() },
       // Web
-      { name: "HTML",       iconUrl: "/assets/img/skill/html.svg",       category: "web", order: 1, createdAt: new Date() },
-      { name: "CSS",        iconUrl: "/assets/img/skill/css.svg",        category: "web", order: 2, createdAt: new Date() },
-      { name: "JavaScript", iconUrl: "/assets/img/skill/js.svg",         category: "web", order: 3, createdAt: new Date() },
-      { name: "PHP",        iconUrl: "/assets/img/skill/php.svg",        category: "web", order: 4, createdAt: new Date() },
-      { name: "MySQL",      iconUrl: "/assets/img/skill/mysql.svg",      category: "web", order: 5, createdAt: new Date() },
-      { name: "Bootstrap",  iconUrl: "/assets/img/skill/bootstrap.svg",  category: "web", order: 6, createdAt: new Date() },
-      { name: "Laravel",    iconUrl: "/assets/img/skill/laravel.svg",    category: "web", order: 7, createdAt: new Date() },
-      { name: "PostgreSQL", iconUrl: "/assets/img/skill/postgresql.svg", category: "web", order: 8, createdAt: new Date() },
-      { name: "GIT",        iconUrl: "/assets/img/skill/git.svg",        category: "web", order: 9, createdAt: new Date() },
-      { name: "GitHub",     iconUrl: "/assets/img/skill/github.svg",     category: "web", order: 10, createdAt: new Date() },
+      { name: "HTML",       iconUrl: "", iconPublicId: "", category: "web", order: 1,  createdAt: new Date() },
+      { name: "CSS",        iconUrl: "", iconPublicId: "", category: "web", order: 2,  createdAt: new Date() },
+      { name: "JavaScript", iconUrl: "", iconPublicId: "", category: "web", order: 3,  createdAt: new Date() },
+      { name: "PHP",        iconUrl: "", iconPublicId: "", category: "web", order: 4,  createdAt: new Date() },
+      { name: "MySQL",      iconUrl: "", iconPublicId: "", category: "web", order: 5,  createdAt: new Date() },
+      { name: "Bootstrap",  iconUrl: "", iconPublicId: "", category: "web", order: 6,  createdAt: new Date() },
+      { name: "Laravel",    iconUrl: "", iconPublicId: "", category: "web", order: 7,  createdAt: new Date() },
+      { name: "PostgreSQL", iconUrl: "", iconPublicId: "", category: "web", order: 8,  createdAt: new Date() },
+      { name: "GIT",        iconUrl: "", iconPublicId: "", category: "web", order: 9,  createdAt: new Date() },
+      { name: "GitHub",     iconUrl: "", iconPublicId: "", category: "web", order: 10, createdAt: new Date() },
       // Programming
-      { name: "JavaScript", iconUrl: "/assets/img/skill/js.svg",     category: "programming", order: 1, createdAt: new Date() },
-      { name: "PHP",        iconUrl: "/assets/img/skill/php.svg",    category: "programming", order: 2, createdAt: new Date() },
-      { name: "Python",     iconUrl: "/assets/img/skill/python.svg", category: "programming", order: 3, createdAt: new Date() },
-      { name: "Java",       iconUrl: "/assets/img/skill/java.svg",   category: "programming", order: 4, createdAt: new Date() },
-      { name: "C",          iconUrl: "/assets/img/skill/c.svg",      category: "programming", order: 5, createdAt: new Date() },
-      { name: "C++",        iconUrl: "/assets/img/skill/cpp.svg",    category: "programming", order: 6, createdAt: new Date() },
+      { name: "JavaScript", iconUrl: "", iconPublicId: "", category: "programming", order: 1, createdAt: new Date() },
+      { name: "PHP",        iconUrl: "", iconPublicId: "", category: "programming", order: 2, createdAt: new Date() },
+      { name: "Python",     iconUrl: "", iconPublicId: "", category: "programming", order: 3, createdAt: new Date() },
+      { name: "Java",       iconUrl: "", iconPublicId: "", category: "programming", order: 4, createdAt: new Date() },
+      { name: "C",          iconUrl: "", iconPublicId: "", category: "programming", order: 5, createdAt: new Date() },
+      { name: "C++",        iconUrl: "", iconPublicId: "", category: "programming", order: 6, createdAt: new Date() },
     ]);
-    console.log("✅ Skills seeded");
+    console.log("✅ Skills seeded (no icons — upload via Admin → Skills → Edit)");
 
     // ── 4. PROJECTS ──────────────────────────────────────────────
     await db.collection("projects").deleteMany({});
