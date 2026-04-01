@@ -12,6 +12,7 @@ import CertSection          from "@/components/portfolio/CertSection";
 import ContactSection       from "@/components/portfolio/ContactSection";
 import ContactModal         from "@/components/portfolio/ContactModal";
 import Footer               from "@/components/portfolio/Footer";
+import ScrollToTop          from "@/components/portfolio/ScrollToTop";
 
 export default function Home() {
   const [contactOpen, setContactOpen] = useState(false);
@@ -20,7 +21,7 @@ export default function Home() {
     <main style={{ background: "#011428", minHeight: "100vh" }}>
       <NavBar />
 
-      <HeroSection onContactClick={() => setContactOpen(true)} />
+      <HeroSection          onContactClick={() => setContactOpen(true)} />
       <AboutSection />
       <ExperienceSection />
       <SkillsSection />
@@ -34,6 +35,8 @@ export default function Home() {
         isOpen={contactOpen}
         onClose={() => setContactOpen(false)}
       />
+
+      <ScrollToTop />
     </main>
   );
 }

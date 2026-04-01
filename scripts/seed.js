@@ -21,13 +21,16 @@ async function seed() {
     await db.collection("profile").insertOne({
       name: "Nahid Hasan",
       jobTitle: "Salesforce Technical Consultant Level-1",
+      heroDescription: "Salesforce Technical Consultant & QA Automation Engineer with hands-on experience automating business processes and ensuring quality delivery. Skilled in Flow Builder automation, end-to-end QA testing, API testing with Postman, and Salesforce configuration.",
       bio: "Currently working as a Salesforce Technical Consultant & QA Automation Engineer with hands-on experience in business process automation, manual testing, API testing, and test case design. Currently working as a Salesforce Technical Consultant at GFGG IT Solutions, where I build Flow Builder automations, configure security settings, and ensure quality delivery through structured testing processes. This role has strengthened my understanding of CRM systems, backend workflows, and automation from both development and QA perspectives. I'm passionate about software quality, problem-solving, and leveraging technology to create efficient, reliable solutions.",
       email: "nahidhasan00619@gmail.com",
       phone: "01756867148",
       whatsappLink: "https://wa.me/8801756867148",
       location: "Darusha, Kornohar, Paba, Rajshahi-6210, Bangladesh",
       profileImageUrl: "",
+      profileImagePublicId: "",
       cvFileUrl: "",
+      cvPublicId: "",
     });
     console.log("✅ Profile seeded");
 

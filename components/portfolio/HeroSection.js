@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
+import { useFetch } from "@/hooks/useFetch";
 
 export default function HeroSection({ onContactClick }) {
   const [mounted, setMounted] = useState(false);
+  const { data: profile } = useFetch("/api/profile");
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 100);
@@ -15,6 +18,11 @@ export default function HeroSection({ onContactClick }) {
     transform: mounted ? "translateY(0)" : "translateY(24px)",
     transition: `opacity 0.7s ease ${delay}ms, transform 0.7s ease ${delay}ms`,
   });
+
+  const description = profile?.heroDescription ||
+    "Salesforce Technical Consultant &amp; QA Automation Engineer with hands-on experience automating business processes and ensuring quality delivery. Skilled in Flow Builder automation, end-to-end QA testing, API testing with Postman, and Salesforce configuration.";
+
+  const jobTitle = profile?.jobTitle || "Salesforce Technical Consultant Level-1";
 
   return (
     <>
@@ -78,6 +86,7 @@ export default function HeroSection({ onContactClick }) {
         }}
       >
         <div
+          className="hero-grid"
           style={{
             maxWidth: "1200px",
             margin: "0 auto",
@@ -148,8 +157,7 @@ export default function HeroSection({ onContactClick }) {
                 lineHeight: 1.4,
               }}
             >
-              Salesforce Technical Consultant Level-1
-            </h2>
+              {jobTitle}            </h2>
 
             {/* Description */}
             <p
@@ -162,7 +170,7 @@ export default function HeroSection({ onContactClick }) {
                 marginBottom: "2rem",
               }}
             >
-              Salesforce Technical Consultant & QA Automation Engineer with hands-on experience automating business processes and ensuring quality delivery. Skilled in Flow Builder automation, end-to-end QA testing, API testing with Postman, and Salesforce configuration.
+              {profile?.heroDescription || "Salesforce Technical Consultant & QA Automation Engineer with hands-on experience automating business processes and ensuring quality delivery."}
             </p>
 
             {/* Buttons + social */}
@@ -221,20 +229,23 @@ export default function HeroSection({ onContactClick }) {
                 justifyContent: "center",
                 overflow: "hidden",
                 flexShrink: 0,
+                position: "relative",
               }}
             >
-              {/* Profile image placeholder — will show initials until image uploaded */}
-              <span
-                style={{
-                  color: "white",
-                  fontSize: "clamp(2.5rem, 5vw, 4rem)",
-                  fontWeight: 700,
-                  userSelect: "none",
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                NH
-              </span>
+              {profile?.profileImageUrl ? (
+                <Image
+                  src={profile.profileImageUrl}
+                  alt="Nahid Hasan"
+                  fill
+                  style={{ objectFit: "cover" }}
+                  sizes="260px"
+                  priority
+                />
+              ) : (
+                <span style={{ color: "white", fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, userSelect: "none", letterSpacing: "-0.02em" }}>
+                  NH
+                </span>
+              )}
             </div>
 
             {/* Scroll down indicator */}
