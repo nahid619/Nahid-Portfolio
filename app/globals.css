@@ -2,14 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Portfolio CSS Variables ── */
 :root {
-  --navy: #011428;
+  --navy:      #011428;
   --dark-blue: #00193b;
-  --mid-blue: #02275b;
-  --green: #059212;
-  --green2: #06D001;
-  --lime: #9BEC00;
-  --muted: #bcc4ba;
+  --mid-blue:  #02275b;
+  --green:     #059212;
+  --green-2:   #06D001;
+  --green-alt: #07b304;
+  --lime:      #9BEC00;
+  --muted:     #bcc4ba;
+  --white:     #ffffff;
+  --font-sans: var(--font-poppins), 'Poppins', sans-serif;
+}
+
+/* ── Base Resets ── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html {
@@ -17,7 +28,48 @@ html {
 }
 
 body {
+  font-family: var(--font-sans);
   background-color: var(--navy);
   color: var(--muted);
-  font-family: 'Poppins', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--white);
+  font-weight: 600;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--mid-blue);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--green);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--green-2);
+}
+
+/* ── Swiper / Cert pagination dots ── */
+.swiper-pagination-bullet {
+  background: var(--mid-blue) !important;
+  opacity: 1 !important;
+}
+.swiper-pagination-bullet-active {
+  background: var(--green) !important;
 }
