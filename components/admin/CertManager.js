@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import { useFetch } from "@/hooks/useFetch";
 import {
@@ -111,8 +112,8 @@ export default function CertManager() {
         {loading
           ? <AdminTr><AdminTd muted>Loading…</AdminTd></AdminTr>
           : certs?.map(c => (
-              <>
-                <AdminTr key={c._id}>
+              <React.Fragment key={c._id}>
+                <AdminTr>
                   <AdminTd>
                     {c.imageUrl
                       ? <div style={{ width: "50px", height: "36px", position: "relative", borderRadius: "4px", overflow: "hidden" }}><Image src={c.imageUrl} alt={c.title} fill style={{ objectFit: "cover" }} sizes="50px" /></div>
@@ -127,7 +128,7 @@ export default function CertManager() {
                   </AdminTd>
                 </AdminTr>
                 {editingId === c._id && (
-                  <tr key={`edit-${c._id}`}>
+                  <tr>
                     <td colSpan={4} style={{ padding: 0 }}>
                       <div style={{ padding: "1rem", background: "#011428", borderTop: "2px solid #059212", borderBottom: "1px solid #02275b" }}>
                         <CertForm form={form} setForm={setForm} onSubmit={handleSubmit} saving={saving} onCancel={cancel} isNew={false} />
@@ -135,7 +136,7 @@ export default function CertManager() {
                     </td>
                   </tr>
                 )}
-              </>
+              </React.Fragment>
             ))}
       </AdminTable>
     </AdminSection>

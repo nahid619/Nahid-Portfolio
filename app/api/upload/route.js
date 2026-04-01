@@ -4,12 +4,6 @@ import { uploadToCloudinary, deleteFromCloudinary } from "@/lib/cloudinary";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// POST /api/upload
-// FormData fields:
-//   file        — the file blob
-//   folder      — cloudinary folder (optional)
-//   type        — "image" | "cv"
-//   oldPublicId — previous public_id to delete on replace (optional)
 export async function POST(request) {
   try {
     const formData    = await request.formData();
@@ -29,8 +23,17 @@ export async function POST(request) {
     const uploadOptions = {
       folder,
       resource_type: isCV ? "raw" : "auto",
-      ...(isCV  && { public_id: `cv_nahid_${Date.now()}`, format: "pdf" }),
-      ...(!isCV && { quality: "auto", fetch_format: "auto" }),
+      // Make ALL uploads publicly accessible — critical for PDFs
+      access_mode: "public",
+      ...(isCV && {
+        public_id: `cv_nahid_${Date.now()}`,
+        format: "pdf",
+        type: "upload",
+      }),
+      ...(!isCV && {
+        quality: "auto",
+        fetch_format: "auto",
+      }),
     };
 
     const result = await uploadToCloudinary(buffer, uploadOptions);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import { useFetch } from "@/hooks/useFetch";
 import {
@@ -168,8 +169,8 @@ export default function ProjectsManager() {
         {loading
           ? <AdminTr><AdminTd muted>Loading…</AdminTd></AdminTr>
           : projects?.map(p => (
-              <>
-                <AdminTr key={p._id}>
+              <React.Fragment key={p._id}>
+                <AdminTr>
                   <AdminTd>
                     {p.projectImageUrl
                       ? <div style={{ width: "48px", height: "34px", position: "relative", borderRadius: "4px", overflow: "hidden" }}><Image src={p.projectImageUrl} alt={p.title} fill style={{ objectFit: "cover" }} sizes="48px" /></div>
@@ -185,7 +186,7 @@ export default function ProjectsManager() {
                   </AdminTd>
                 </AdminTr>
                 {editingId === p._id && (
-                  <tr key={`edit-${p._id}`}>
+                  <tr>
                     <td colSpan={5} style={{ padding: 0 }}>
                       <div style={{ padding: "1rem", background: "#011428", borderTop: "2px solid #059212", borderBottom: "1px solid #02275b" }}>
                         <ProjectForm form={form} setForm={setForm} onSubmit={handleSubmit} saving={saving} onCancel={cancel} isNew={false} />
@@ -193,7 +194,7 @@ export default function ProjectsManager() {
                     </td>
                   </tr>
                 )}
-              </>
+              </React.Fragment>
             ))}
       </AdminTable>
     </AdminSection>

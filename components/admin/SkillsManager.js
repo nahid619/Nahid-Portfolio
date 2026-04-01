@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import { useFetch } from "@/hooks/useFetch";
 import {
@@ -175,8 +176,8 @@ export default function SkillsManager() {
         {loading
           ? <AdminTr><AdminTd muted>Loading…</AdminTd></AdminTr>
           : skills?.map(s => (
-              <>
-                <AdminTr key={s._id}>
+              <React.Fragment key={s._id}>
+                <AdminTr>
                   <AdminTd>
                     {s.iconUrl ? (
                       <div style={{ width: "28px", height: "28px", position: "relative", flexShrink: 0 }}>
@@ -194,10 +195,8 @@ export default function SkillsManager() {
                     <DeleteBtn onClick={() => handleDelete(s)} />
                   </AdminTd>
                 </AdminTr>
-
-                {/* Inline edit form — appears right below clicked row */}
                 {editingId === s._id && (
-                  <tr key={`edit-${s._id}`}>
+                  <tr>
                     <td colSpan={5} style={{ padding: 0 }}>
                       <div style={{ padding: "1rem", background: "#011428", borderTop: "2px solid #059212", borderBottom: "1px solid #02275b" }}>
                         <AlertBox type={msg.type} message={msg.text} />
@@ -235,7 +234,7 @@ export default function SkillsManager() {
                     </td>
                   </tr>
                 )}
-              </>
+              </React.Fragment>
             ))}
       </AdminTable>
     </AdminSection>

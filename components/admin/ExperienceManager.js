@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import React from "react";
 import { useFetch } from "@/hooks/useFetch";
 import { calculateTotalExperience } from "@/lib/calculateExperience";
 import {
@@ -134,8 +135,8 @@ export default function ExperienceManager() {
         {loading
           ? <AdminTr><AdminTd muted>Loading…</AdminTd></AdminTr>
           : experiences?.map(exp => (
-              <>
-                <AdminTr key={exp._id}>
+              <React.Fragment key={exp._id}>
+                <AdminTr>
                   <AdminTd>{exp.role}</AdminTd>
                   <AdminTd muted>{exp.company}</AdminTd>
                   <AdminTd muted style={{ fontSize: "0.75rem" }}>{exp.startDate} – {exp.isCurrent ? "Present" : (exp.endDate || "?")}</AdminTd>
@@ -146,7 +147,7 @@ export default function ExperienceManager() {
                   </AdminTd>
                 </AdminTr>
                 {editingId === exp._id && (
-                  <tr key={`edit-${exp._id}`}>
+                  <tr>
                     <td colSpan={5} style={{ padding: 0 }}>
                       <div style={{ padding: "1rem", background: "#011428", borderTop: "2px solid #059212", borderBottom: "1px solid #02275b" }}>
                         <ExpForm form={form} setForm={setForm} onSubmit={handleSubmit} saving={saving} onCancel={cancel} isNew={false} />
@@ -154,7 +155,7 @@ export default function ExperienceManager() {
                     </td>
                   </tr>
                 )}
-              </>
+              </React.Fragment>
             ))}
       </AdminTable>
     </AdminSection>

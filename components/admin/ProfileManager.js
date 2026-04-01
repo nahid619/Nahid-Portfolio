@@ -44,16 +44,19 @@ export default function ProfileManager() {
 
       if (!res.ok) throw new Error(data.message || "Upload failed");
 
-      // Save immediately so profile photo updates right away
       const newForm = { ...form, profileImageUrl: data.url, profileImagePublicId: data.publicId };
       setForm(newForm);
 
+      // Save immediately — use newForm not form (form state hasn't updated yet)
       const saveRes = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newForm),
       });
-      if (!saveRes.ok) throw new Error("Photo uploaded but failed to save URL");
+      if (!saveRes.ok) {
+        const errData = await saveRes.json().catch(() => ({}));
+        throw new Error(errData.message || "Photo uploaded but failed to save URL");
+      }
 
       setMsg({ type: "success", text: "Profile photo updated! It now shows in both the Hero and About sections." });
       refetch();
