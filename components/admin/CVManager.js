@@ -1,3 +1,4 @@
+// components/admin/CVManager.js
 "use client";
 
 import { useState } from "react";
@@ -18,6 +19,11 @@ export default function CVManager() {
       return;
     }
 
+    if (file.size > 10 * 1024 * 1024) {
+      setMsg({ type: "error", text: "File too large. Max 10MB." });
+      return;
+    }
+
     setUploading(true);
     setMsg({ type: "", text: "" });
 
@@ -26,16 +32,23 @@ export default function CVManager() {
       fd.append("file", file);
       fd.append("folder", "nahid-portfolio/cv");
       fd.append("type", "cv");
+      // Pass old publicId and type so the old file gets deleted
       if (profile?.cvPublicId) {
         fd.append("oldPublicId", profile.cvPublicId);
+        fd.append("oldType", "cv");
       }
 
+      console.log("[CVManager] Uploading PDF...");
       const uploadRes  = await fetch("/api/upload", { method: "POST", body: fd });
       const uploadData = await uploadRes.json();
 
-      if (!uploadRes.ok) throw new Error(uploadData.message || "Upload failed");
+      if (!uploadRes.ok) {
+        throw new Error(uploadData.message || "Upload to Cloudinary failed");
+      }
 
-      // Save URL + publicId to profile
+      console.log("[CVManager] Upload success:", uploadData.url);
+
+      // Save the new URL + publicId to profile
       const saveRes = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -46,14 +59,19 @@ export default function CVManager() {
         }),
       });
 
-      if (!saveRes.ok) throw new Error("CV uploaded but failed to save URL to profile");
+      if (!saveRes.ok) {
+        const saveErr = await saveRes.json().catch(() => ({}));
+        throw new Error(saveErr.message || "CV uploaded but failed to save URL to profile");
+      }
 
-      setMsg({ type: "success", text: "CV uploaded successfully! The Download CV button on your portfolio now points to this file." });
+      setMsg({
+        type: "success",
+        text: "CV uploaded successfully! The Download CV button on your portfolio now uses this file.",
+      });
       refetch();
-
-      // Reset input so same file can be re-uploaded if needed
-      e.target.value = "";
+      e.target.value = ""; // reset input
     } catch (err) {
+      console.error("[CVManager] Error:", err);
       setMsg({ type: "error", text: err.message });
     } finally {
       setUploading(false);
@@ -64,22 +82,40 @@ export default function CVManager() {
     <AdminSection title="CV / Resume">
       <AlertBox type={msg.type} message={msg.text} />
 
-      <div style={{ background: "#011428", border: "1px dashed #02275b", borderRadius: "12px", padding: "2.5rem 2rem", textAlign: "center" }}>
+      <div style={{
+        background: "#011428",
+        border: "1px dashed #02275b",
+        borderRadius: "12px",
+        padding: "2.5rem 2rem",
+        textAlign: "center",
+      }}>
         <div style={{ fontSize: "3rem", marginBottom: "0.75rem" }}>📄</div>
 
         {profile?.cvFileUrl ? (
           <div style={{ marginBottom: "1.5rem" }}>
-            <div style={{ color: "white", fontSize: "0.938rem", fontWeight: 700, marginBottom: "6px" }}>
+            <div style={{ color: "white", fontSize: "0.938rem", fontWeight: 700, marginBottom: "8px" }}>
               CV currently active
             </div>
+            {/* Opens PDF in new tab — works because we upload as image/pdf not raw */}
             <a
               href={profile.cvFileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: "#06D001", fontSize: "0.813rem", display: "inline-block", marginBottom: "6px", wordBreak: "break-all", maxWidth: "400px" }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                color: "#06D001",
+                fontSize: "0.875rem",
+                marginBottom: "8px",
+                textDecoration: "underline",
+              }}
             >
               View current CV ↗
             </a>
+            <div style={{ color: "#bcc4ba", fontSize: "0.75rem", marginBottom: "4px", wordBreak: "break-all", maxWidth: "400px", margin: "0 auto 8px" }}>
+              {profile.cvFileUrl}
+            </div>
             <div style={{ color: "#bcc4ba", fontSize: "0.75rem" }}>
               Uploading a new PDF will automatically remove the old one from Cloudinary.
             </div>
@@ -90,21 +126,30 @@ export default function CVManager() {
           </div>
         )}
 
-        <label
-          style={{
-            display: "inline-flex", alignItems: "center", gap: "8px",
-            background: uploading ? "#028f00" : "linear-gradient(135deg,#059212,#06D001)",
-            color: "white", padding: "11px 28px", borderRadius: "8px",
-            fontSize: "0.875rem", fontWeight: 700,
-            cursor: uploading ? "not-allowed" : "pointer",
-            opacity: uploading ? 0.8 : 1,
-            transition: "opacity 0.2s",
-            boxShadow: "0 4px 16px rgba(5,146,18,0.3)",
-          }}
-        >
+        <label style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "8px",
+          background: "linear-gradient(135deg, #059212, #06D001)",
+          color: "white",
+          padding: "11px 28px",
+          borderRadius: "8px",
+          fontSize: "0.875rem",
+          fontWeight: 700,
+          cursor: uploading ? "not-allowed" : "pointer",
+          opacity: uploading ? 0.8 : 1,
+          boxShadow: "0 4px 16px rgba(5,146,18,0.3)",
+        }}>
           {uploading ? (
             <>
-              <span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+              <span style={{
+                display: "inline-block",
+                width: "14px", height: "14px",
+                border: "2px solid rgba(255,255,255,0.4)",
+                borderTopColor: "white",
+                borderRadius: "50%",
+                animation: "spin 0.7s linear infinite",
+              }} />
               Uploading…
             </>
           ) : (
@@ -120,7 +165,7 @@ export default function CVManager() {
         </label>
 
         <p style={{ color: "#bcc4ba", fontSize: "0.75rem", marginTop: "1rem" }}>
-          PDF only · Max 10MB · Stored securely on Cloudinary
+          PDF only · Max 10MB · Stored on Cloudinary
         </p>
       </div>
 

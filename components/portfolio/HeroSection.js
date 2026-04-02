@@ -190,8 +190,20 @@ export default function HeroSection({ onContactClick }) {
                 </svg>
               </button>
 
-              <a href="/assets/Nahid Hasan.pdf" download className="hero-contact-btn"
-                style={{ background: "transparent", border: "1px solid #059212", color: "#06D001", boxShadow: "none" }}
+              <a
+                href={profile?.cvFileUrl || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hero-contact-btn"
+                style={{
+                  background: "transparent",
+                  border: "1px solid #059212",
+                  color: "#06D001",
+                  boxShadow: "none",
+                  opacity: profile?.cvFileUrl ? 1 : 0.5,
+                  pointerEvents: profile?.cvFileUrl ? "auto" : "none",
+                }}
+                title={profile?.cvFileUrl ? "Download CV" : "CV not uploaded yet"}
               >
                 Download CV
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

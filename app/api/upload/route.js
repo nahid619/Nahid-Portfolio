@@ -1,3 +1,4 @@
+// app/api/upload/route.js
 import { NextResponse } from "next/server";
 import { uploadToCloudinary, deleteFromCloudinary } from "@/lib/cloudinary";
 
@@ -11,6 +12,7 @@ export async function POST(request) {
     const folder      = formData.get("folder")      || "nahid-portfolio";
     const type        = formData.get("type")        || "image";
     const oldPublicId = formData.get("oldPublicId") || null;
+    const oldType     = formData.get("oldType")     || "image"; // for correct deletion
 
     if (!file || typeof file === "string") {
       return NextResponse.json({ message: "No file provided" }, { status: 400 });
@@ -20,30 +22,46 @@ export async function POST(request) {
     const buffer = Buffer.from(bytes);
     const isCV   = type === "cv";
 
-    const uploadOptions = {
-      folder,
-      resource_type: isCV ? "raw" : "auto",
-      // Make ALL uploads publicly accessible — critical for PDFs
-      access_mode: "public",
-      ...(isCV && {
-        public_id: `cv_nahid_${Date.now()}`,
+    let uploadOptions;
+
+    if (isCV) {
+      // Upload PDF as resource_type "image" — this is the correct Cloudinary
+      // approach for PDFs. It gives a proper accessible URL that browsers can
+      // open and download. resource_type "raw" causes 401/blank page issues.
+      uploadOptions = {
+        folder,
+        resource_type: "image",
         format: "pdf",
+        public_id: `cv_nahid_${Date.now()}`,
+        access_mode: "public",
         type: "upload",
-      }),
-      ...(!isCV && {
+      };
+    } else {
+      // Images and SVGs
+      uploadOptions = {
+        folder,
+        resource_type: "auto", // auto detects image/svg/video
+        access_mode: "public",
+        type: "upload",
         quality: "auto",
         fetch_format: "auto",
-      }),
-    };
+      };
+    }
 
+    console.log(`[Upload] Starting upload — type: ${type}, folder: ${folder}`);
     const result = await uploadToCloudinary(buffer, uploadOptions);
+    console.log(`[Upload] Success — url: ${result.secure_url}`);
 
-    // Delete old file if replacing
+    // Delete old file from Cloudinary if replacing
     if (oldPublicId) {
       try {
-        await deleteFromCloudinary(oldPublicId, isCV ? "raw" : "image");
+        // Determine old resource type for deletion
+        const oldResourceType = oldType === "cv" ? "image" : "image";
+        await deleteFromCloudinary(oldPublicId, oldResourceType);
+        console.log(`[Upload] Deleted old file: ${oldPublicId}`);
       } catch (e) {
-        console.warn("Old file delete skipped:", e.message);
+        console.warn("[Upload] Could not delete old file:", e.message);
+        // Non-fatal — keep going
       }
     }
 
@@ -57,6 +75,9 @@ export async function POST(request) {
 
   } catch (error) {
     console.error("[Upload Error]", error);
-    return NextResponse.json({ message: error.message || "Upload failed" }, { status: 500 });
+    return NextResponse.json(
+      { message: error.message || "Upload failed. Check Cloudinary credentials." },
+      { status: 500 }
+    );
   }
 }

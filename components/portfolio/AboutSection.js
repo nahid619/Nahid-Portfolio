@@ -147,8 +147,9 @@ export default function AboutSection() {
 
             {/* Download CV button */}
             <a
-              href="/assets/Nahid Hasan.pdf"
-              download
+              href={profile?.cvFileUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -162,6 +163,8 @@ export default function AboutSection() {
                 textDecoration: "none",
                 boxShadow: "0 4px 16px rgba(5,146,18,0.3)",
                 transition: "transform 0.2s, box-shadow 0.2s",
+                opacity: profile?.cvFileUrl ? 1 : 0.5,
+                pointerEvents: profile?.cvFileUrl ? "auto" : "none",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "translateY(-2px)";
