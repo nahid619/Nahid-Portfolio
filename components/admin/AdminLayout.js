@@ -5,13 +5,14 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 const NAV_ITEMS = [
-  { id: "profile",    label: "Profile",      emoji: "👤" },
-  { id: "experience", label: "Experience",   emoji: "💼" },
-  { id: "skills",     label: "Skills",       emoji: "⚡" },
-  { id: "projects",   label: "Projects",     emoji: "📁" },
-  { id: "certs",      label: "Certifications", emoji: "📜" },
-  { id: "links",      label: "Social Links", emoji: "🔗" },
-  { id: "cv",         label: "CV / Resume",  emoji: "📄" },
+  { id: "profile",       label: "Profile",        emoji: "👤" },
+  { id: "experience",    label: "Experience",      emoji: "💼" },
+  { id: "skills",        label: "Skills",          emoji: "⚡" },
+  { id: "projects",      label: "Projects",        emoji: "📁" },
+  { id: "certs",         label: "Certifications",  emoji: "📜" },
+  { id: "qualification", label: "Qualification",   emoji: "🎓" },
+  { id: "links",         label: "Social Links",    emoji: "🔗" },
+  { id: "cv",            label: "CV / Resume",     emoji: "📄" },
 ];
 
 export default function AdminLayout({ activeSection, onSectionChange, children }) {

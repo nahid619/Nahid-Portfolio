@@ -1,9 +1,11 @@
+// components/portfolio/ExperienceSection.js
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import { useFetch } from "@/hooks/useFetch";
-import { SectionWrapper, SectionHeader, ArrowNav, TechBadge, SkeletonLoader } from "@/components/shared";
+import { SectionWrapper, SectionHeader, TechBadge, SkeletonLoader } from "@/components/shared";
 import ExperienceModal from "./ExperienceModal";
 
 function formatPeriodShort(startDate, endDate, isCurrent) {
@@ -12,160 +14,160 @@ function formatPeriodShort(startDate, endDate, isCurrent) {
     const [y, m] = d.split("-");
     return new Date(y, m - 1).toLocaleDateString("en-US", { month: "short", year: "numeric" });
   };
-  const start = fmt(startDate);
-  const end = isCurrent ? "Present" : endDate ? fmt(endDate) : "Present";
+  const start  = fmt(startDate);
+  const end    = isCurrent ? "Present" : endDate ? fmt(endDate) : "Present";
   const startMs = new Date(startDate.replace("-", "/") + "/01");
   const endMs   = isCurrent ? new Date() : new Date((endDate || startDate).replace("-", "/") + "/01");
   const months  = Math.max(0, (endMs.getFullYear() - startMs.getFullYear()) * 12 + (endMs.getMonth() - startMs.getMonth()));
   const years   = Math.floor(months / 12);
   const rem     = months % 12;
-  const dur     = years > 0 ? `${years}y ${rem > 0 ? rem + "m" : ""}` : `${months}m`;
-  return `${start} – ${end} · ${dur.trim()}`;
+  const dur     = years > 0 ? `${years}y ${rem > 0 ? rem + "m" : ""}`.trim() : `${months}m`;
+  return `${start} – ${end} · ${dur}`;
 }
 
 export default function ExperienceSection() {
   const { data: experiences, loading } = useFetch("/api/experiences");
   const [selectedExp, setSelectedExp] = useState(null);
-  const [scrollIdx, setScrollIdx]     = useState(0);
-  const stripRef = useRef(null);
 
-  const CARD_WIDTH = 240; // px including gap
-
-  function scroll(dir) {
-    const max = Math.max(0, (experiences?.length || 0) - 1);
-    const next = Math.max(0, Math.min(scrollIdx + dir, max));
-    setScrollIdx(next);
-    if (stripRef.current) {
-      stripRef.current.scrollTo({ left: next * (CARD_WIDTH + 12), behavior: "smooth" });
-    }
-  }
+  // Show only the 2 most recent experiences
+  const visible = experiences?.slice(0, 2) || [];
 
   return (
     <SectionWrapper id="experience">
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1.5rem" }}>
         <SectionHeader title="Work Experience" subtitle="Where I've worked — latest first" />
 
-        {/* Card strip */}
-        <div
-          ref={stripRef}
-          style={{
-            display: "flex",
-            gap: "12px",
-            overflowX: "auto",
-            scrollbarWidth: "none",
-            paddingBottom: "4px",
-          }}
-        >
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "16px",
+        }}>
           {loading
             ? Array.from({ length: 3 }).map((_, i) => (
-                <div
-                  key={i}
-                  style={{
-                    minWidth: `${CARD_WIDTH}px`,
-                    background: "#00193b",
-                    border: "1px solid #02275b",
-                    borderRadius: "10px",
-                    padding: "14px",
-                    flexShrink: 0,
-                  }}
-                >
-                  <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-                    <SkeletonLoader variant="circle" width="38px" height="38px" />
+                <div key={i} style={{ background: "#00193b", border: "1px solid #02275b", borderRadius: "12px", padding: "18px", height: "180px" }}>
+                  <div style={{ display: "flex", gap: "10px", marginBottom: "12px" }}>
+                    <SkeletonLoader variant="circle" width="42px" height="42px" />
                     <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <SkeletonLoader variant="line" width="80%" height="10px" />
-                      <SkeletonLoader variant="line" width="60%" height="8px" />
+                      <SkeletonLoader variant="line" width="80%" height="11px" />
+                      <SkeletonLoader variant="line" width="60%" height="9px" />
                     </div>
                   </div>
-                  <SkeletonLoader variant="line" width="90%" height="8px" style={{ marginBottom: "10px" }} />
+                  <SkeletonLoader variant="line" width="90%" height="9px" style={{ marginBottom: "12px" }} />
                   <div style={{ display: "flex", gap: "6px" }}>
-                    <SkeletonLoader variant="line" width="50px" height="20px" />
-                    <SkeletonLoader variant="line" width="50px" height="20px" />
+                    <SkeletonLoader variant="line" width="55px" height="22px" />
+                    <SkeletonLoader variant="line" width="55px" height="22px" />
                   </div>
                 </div>
               ))
-            : experiences?.map((exp) => (
-                <div
-                  key={exp._id}
-                  onClick={() => setSelectedExp(exp)}
+            : (
+              <>
+                {visible.map(exp => (
+                  <ExperienceCard key={exp._id} exp={exp} onClick={() => setSelectedExp(exp)} />
+                ))}
+
+                {/* See All card */}
+                <Link
+                  href="/experiences"
                   style={{
-                    minWidth: `${CARD_WIDTH}px`,
-                    maxWidth: `${CARD_WIDTH}px`,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "10px",
                     background: "#00193b",
-                    border: "1px solid #02275b",
-                    borderRadius: "10px",
-                    padding: "14px",
-                    cursor: "pointer",
-                    flexShrink: 0,
-                    transition: "border-color 0.2s, transform 0.2s",
+                    border: "2px dashed #059212",
+                    borderRadius: "12px",
+                    minHeight: "160px",
+                    textDecoration: "none",
+                    transition: "background 0.2s, border-color 0.2s",
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "#06D001";
-                    e.currentTarget.style.transform = "translateY(-3px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "#02275b";
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "#021f40"; e.currentTarget.style.borderColor = "#06D001"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "#00193b"; e.currentTarget.style.borderColor = "#059212"; }}
                 >
-                  {/* Card top */}
-                  <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "8px" }}>
-                    <div
-                      style={{
-                        width: "38px", height: "38px",
-                        background: "#02275b",
-                        borderRadius: "8px",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: "13px", fontWeight: 700, color: "#06D001",
-                        flexShrink: 0, overflow: "hidden",
-                        position: "relative",
-                      }}
-                    >
-                      {exp.companyLogoUrl
-                        ? <Image src={exp.companyLogoUrl} alt={exp.company} fill style={{ objectFit: "cover" }} sizes="38px" />
-                        : exp.company?.slice(0, 2).toUpperCase()
-                      }
-                    </div>
-                    <div>
-                      <div style={{ color: "white", fontSize: "0.813rem", fontWeight: 700, lineHeight: 1.3 }}>{exp.role}</div>
-                      <div style={{ color: "#06D001", fontSize: "0.75rem" }}>{exp.company}</div>
-                    </div>
-                  </div>
-
-                  {/* Period */}
-                  <div style={{ color: "#bcc4ba", fontSize: "0.75rem", marginBottom: "10px" }}>
-                    🗓 {formatPeriodShort(exp.startDate, exp.endDate, exp.isCurrent)}
-                  </div>
-
-                  {/* Skill tags */}
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-                    {exp.skills?.slice(0, 4).map((s) => (
-                      <TechBadge key={s} label={s} />
-                    ))}
-                    {exp.skills?.length > 4 && (
-                      <TechBadge label={`+${exp.skills.length - 4}`} variant="outline" />
-                    )}
-                  </div>
-                </div>
-              ))}
+                  <span style={{ fontSize: "2rem", color: "#06D001" }}>→</span>
+                  <span style={{ color: "#06D001", fontSize: "0.938rem", fontWeight: 700 }}>See All Experience</span>
+                  <span style={{ color: "#bcc4ba", fontSize: "0.75rem" }}>
+                    View all {experiences?.length || ""} entries
+                  </span>
+                </Link>
+              </>
+            )}
         </div>
-
-        {/* Arrow navigation */}
-        {!loading && experiences?.length > 1 && (
-          <ArrowNav
-            onPrev={() => scroll(-1)}
-            onNext={() => scroll(1)}
-            prevDisabled={scrollIdx === 0}
-            nextDisabled={scrollIdx >= (experiences?.length || 1) - 1}
-          />
-        )}
       </div>
 
-      {/* Experience Modal */}
       <ExperienceModal
         exp={selectedExp}
         isOpen={!!selectedExp}
         onClose={() => setSelectedExp(null)}
       />
     </SectionWrapper>
+  );
+}
+
+function ExperienceCard({ exp, onClick }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        background: "#00193b",
+        border: "1px solid #02275b",
+        borderRadius: "12px",
+        padding: "18px 20px",
+        cursor: "pointer",
+        transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
+        // Use margin instead of transform to avoid going under sticky nav
+        position: "relative",
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.borderColor = "#06D001";
+        e.currentTarget.style.boxShadow = "0 8px 24px rgba(5,146,18,0.15)";
+        e.currentTarget.style.marginTop = "-4px";
+        e.currentTarget.style.marginBottom = "4px";
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.borderColor = "#02275b";
+        e.currentTarget.style.boxShadow = "none";
+        e.currentTarget.style.marginTop = "0";
+        e.currentTarget.style.marginBottom = "0";
+      }}
+    >
+      {/* Top: logo + role */}
+      <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "10px" }}>
+        <div style={{
+          width: "42px", height: "42px",
+          background: "#02275b", borderRadius: "8px",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: "14px", fontWeight: 700, color: "#06D001",
+          flexShrink: 0, overflow: "hidden", position: "relative",
+        }}>
+          {exp.companyLogoUrl
+            ? <Image src={exp.companyLogoUrl} alt={exp.company} fill style={{ objectFit: "cover" }} sizes="42px" />
+            : exp.company?.slice(0, 2).toUpperCase()
+          }
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ color: "white", fontSize: "0.875rem", fontWeight: 700, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {exp.role}
+          </div>
+          <div style={{ color: "#06D001", fontSize: "0.8rem" }}>{exp.company}</div>
+        </div>
+      </div>
+
+      {/* Period */}
+      <div style={{ color: "#bcc4ba", fontSize: "0.775rem", marginBottom: "12px" }}>
+        🗓 {formatPeriodShort(exp.startDate, exp.endDate, exp.isCurrent)}
+      </div>
+
+      {/* Skill tags */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+        {exp.skills?.slice(0, 4).map(s => <TechBadge key={s} label={s} />)}
+        {exp.skills?.length > 4 && <TechBadge label={`+${exp.skills.length - 4}`} variant="outline" />}
+      </div>
+
+      {/* Click hint */}
+      <div style={{ color: "#bcc4ba", fontSize: "0.7rem", marginTop: "10px", opacity: 0.6 }}>
+        Click to see full details →
+      </div>
+    </div>
   );
 }

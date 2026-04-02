@@ -246,12 +246,43 @@ async function seed() {
     // ── 6. SOCIAL LINKS ──────────────────────────────────────────
     await db.collection("socialLinks").deleteMany({});
     await db.collection("socialLinks").insertMany([
-      { name: "LinkedIn",    url: "https://www.linkedin.com/in/nahid-hasan-0274881a7/", logo: "in",  showIn: "both",          order: 1, createdAt: new Date() },
-      { name: "GitHub",      url: "https://github.com/nahid619",                        logo: "GH",  showIn: "both",          order: 2, createdAt: new Date() },
-      { name: "Facebook",    url: "https://www.facebook.com/nahidhasan987",             logo: "fb",  showIn: "footer",        order: 3, createdAt: new Date() },
-      { name: "WhatsApp",    url: "https://wa.me/8801756867148",                        logo: "💬",  showIn: "contact-modal", order: 4, createdAt: new Date() },
+      { name: "LinkedIn", url: "https://www.linkedin.com/in/nahid-hasan-0274881a7/", logo: "in",  iconImageUrl: "", iconPublicId: "", showIn: "both",          order: 1, createdAt: new Date() },
+      { name: "GitHub",   url: "https://github.com/nahid619",                        logo: "GH",  iconImageUrl: "", iconPublicId: "", showIn: "both",          order: 2, createdAt: new Date() },
+      { name: "Facebook", url: "https://www.facebook.com/nahidhasan987",             logo: "fb",  iconImageUrl: "", iconPublicId: "", showIn: "footer",        order: 3, createdAt: new Date() },
+      { name: "WhatsApp", url: "https://wa.me/8801756867148",                        logo: "💬",  iconImageUrl: "", iconPublicId: "", showIn: "contact-modal", order: 4, createdAt: new Date() },
     ]);
     console.log("✅ Social links seeded");
+
+    // ── 7. QUALIFICATIONS ────────────────────────────────────────
+    await db.collection("qualifications").deleteMany({});
+    await db.collection("qualifications").insertMany([
+      {
+        title: "B.Sc. CSE", subtitle: "Computer Science and Engineering",
+        institution: "Varendra University, Rajshahi", period: "2020 – 2024",
+        detail: "CGPA: 3.70 / 4.00",
+        highlights: [
+          "Algorithms, DBMS, Data Structures, OOP, OS, Computer Networks",
+          "Completed training on Generative AI and Machine Learning",
+          "Placed 4th in intra-university coding competition",
+        ],
+        side: "left", order: 1, createdAt: new Date(),
+      },
+      {
+        title: "HSC — Science", subtitle: "Rajshahi Government City College",
+        institution: "Rajshahi", period: "2016 – 2018",
+        detail: "GPA: 4.25 / 5.00",
+        highlights: ["Physics, Chemistry, Math, Higher Math, ICT"],
+        side: "right", order: 2, createdAt: new Date(),
+      },
+      {
+        title: "SSC — Science", subtitle: "Darusha High School",
+        institution: "Rajshahi", period: "2016",
+        detail: "GPA: 5.00 / 5.00 — Golden A+",
+        highlights: [],
+        side: "left", order: 3, createdAt: new Date(),
+      },
+    ]);
+    console.log("✅ Qualifications seeded");
 
     console.log("\n🎉 All collections seeded successfully!");
   } catch (error) {
