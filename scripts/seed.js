@@ -244,12 +244,13 @@ async function seed() {
     console.log("✅ Certifications seeded");
 
     // ── 6. SOCIAL LINKS ──────────────────────────────────────────
+    // showIn is an ARRAY: "navbar","hero","footer","contact-modal"
     await db.collection("socialLinks").deleteMany({});
     await db.collection("socialLinks").insertMany([
-      { name: "LinkedIn", url: "https://www.linkedin.com/in/nahid-hasan-0274881a7/", logo: "in",  iconImageUrl: "", iconPublicId: "", showIn: "both",          order: 1, createdAt: new Date() },
-      { name: "GitHub",   url: "https://github.com/nahid619",                        logo: "GH",  iconImageUrl: "", iconPublicId: "", showIn: "both",          order: 2, createdAt: new Date() },
-      { name: "Facebook", url: "https://www.facebook.com/nahidhasan987",             logo: "fb",  iconImageUrl: "", iconPublicId: "", showIn: "footer",        order: 3, createdAt: new Date() },
-      { name: "WhatsApp", url: "https://wa.me/8801756867148",                        logo: "💬",  iconImageUrl: "", iconPublicId: "", showIn: "contact-modal", order: 4, createdAt: new Date() },
+      { name: "LinkedIn", url: "https://www.linkedin.com/in/nahid-hasan-0274881a7/", logo: "in",  iconImageUrl: "", iconPublicId: "", showIn: ["navbar","hero","footer","contact-modal"], order: 1, createdAt: new Date() },
+      { name: "GitHub",   url: "https://github.com/nahid619",                        logo: "GH",  iconImageUrl: "", iconPublicId: "", showIn: ["navbar","hero","footer"],                 order: 2, createdAt: new Date() },
+      { name: "Facebook", url: "https://www.facebook.com/nahidhasan987",             logo: "fb",  iconImageUrl: "", iconPublicId: "", showIn: ["footer","contact-modal"],                 order: 3, createdAt: new Date() },
+      { name: "WhatsApp", url: "https://wa.me/8801756867148",                        logo: "💬",  iconImageUrl: "", iconPublicId: "", showIn: ["contact-modal"],                          order: 4, createdAt: new Date() },
     ]);
     console.log("✅ Social links seeded");
 

@@ -1,18 +1,20 @@
+// app/api/social-links/route.js
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 
 // GET /api/social-links
-// Optional ?showIn=footer|contact-modal|both filter
+// Optional ?location=navbar|footer|contact-modal|hero filter
+// Returns links where showIn array includes the requested location
 export async function GET(request) {
   try {
-    const db = await getDb();
+    const db  = await getDb();
     const { searchParams } = new URL(request.url);
-    const showIn = searchParams.get("showIn");
+    const location = searchParams.get("showIn") || searchParams.get("location");
 
-    // "both" means show everywhere, so we match both "both" and the specific location
     let query = {};
-    if (showIn) {
-      query = { $or: [{ showIn: "both" }, { showIn: showIn }] };
+    if (location) {
+      // showIn is now an array — match if it contains the requested location
+      query = { showIn: { $in: [location] } };
     }
 
     const links = await db
@@ -30,16 +32,19 @@ export async function GET(request) {
 // POST /api/social-links
 export async function POST(request) {
   try {
-    const db = await getDb();
+    const db   = await getDb();
     const body = await request.json();
 
     const doc = {
-      name: body.name || "",
-      url: body.url || "",
-      logo: body.logo || "",           // emoji or text abbreviation e.g. "in", "GH"
-      showIn: body.showIn || "both",   // "both" | "footer" | "contact-modal"
-      order: body.order || 0,
-      createdAt: new Date(),
+      name:         body.name         || "",
+      url:          body.url          || "",
+      logo:         body.logo         || "",
+      iconImageUrl: body.iconImageUrl || "",
+      iconPublicId: body.iconPublicId || "",
+      // showIn is now an array of locations
+      showIn:       Array.isArray(body.showIn) ? body.showIn : [body.showIn || "navbar"],
+      order:        body.order        || 0,
+      createdAt:    new Date(),
     };
 
     const result = await db.collection("socialLinks").insertOne(doc);

@@ -6,7 +6,9 @@ import { useFetch } from "@/hooks/useFetch";
 
 export default function HeroSection({ onContactClick }) {
   const [mounted, setMounted] = useState(false);
-  const { data: profile } = useFetch("/api/profile");
+  const { data: profile }    = useFetch("/api/profile");
+  // Only links with "hero" in their showIn array
+  const { data: heroLinks }  = useFetch("/api/social-links", { params: { location: "hero" } });
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 100);
@@ -20,7 +22,7 @@ export default function HeroSection({ onContactClick }) {
   });
 
   const description = profile?.heroDescription ||
-    "Salesforce Technical Consultant &amp; QA Automation Engineer with hands-on experience automating business processes and ensuring quality delivery. Skilled in Flow Builder automation, end-to-end QA testing, API testing with Postman, and Salesforce configuration.";
+    "Salesforce Technical Consultant & QA Automation Engineer with hands-on experience automating business processes and ensuring quality delivery.";
 
   const jobTitle = profile?.jobTitle || "Salesforce Technical Consultant Level-1";
 
@@ -211,11 +213,28 @@ export default function HeroSection({ onContactClick }) {
                 </svg>
               </a>
 
-              {/* Social icons */}
-              <div style={{ display: "flex", gap: "8px", marginLeft: "4px" }}>
-                <a href="https://www.linkedin.com/in/nahid-hasan-0274881a7/" target="_blank" rel="noopener noreferrer" className="hero-social-icon" title="LinkedIn">in</a>
-                <a href="https://github.com/nahid619" target="_blank" rel="noopener noreferrer" className="hero-social-icon" title="GitHub">GH</a>
-              </div>
+              {/* Social icons — from DB (showIn includes "hero") */}
+              {heroLinks && heroLinks.length > 0 && (
+                <div style={{ display: "flex", gap: "8px", marginLeft: "4px" }}>
+                  {heroLinks.map(link => (
+                    <a
+                      key={link._id}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hero-social-icon"
+                      title={link.name}
+                      style={{ position: "relative", overflow: "hidden" }}
+                    >
+                      {link.iconImageUrl ? (
+                        <Image src={link.iconImageUrl} alt={link.name} fill style={{ objectFit: "contain" }} sizes="38px" />
+                      ) : (
+                        link.logo
+                      )}
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

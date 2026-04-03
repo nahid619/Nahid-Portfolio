@@ -8,11 +8,41 @@ import { useFetch } from "@/hooks/useFetch";
 import {
   AdminSection, AddButton, AdminTable, AdminTr, AdminTd,
   EditBtn, DeleteBtn, AdminForm, FormRow, FormField,
-  AdminInput, AdminSelect, StatusBadge, AlertBox,
+  AdminInput, AlertBox,
 } from "./AdminUI";
 
-const EMPTY = { name: "", url: "", logo: "", iconImageUrl: "", iconPublicId: "", showIn: "both", order: 0 };
-const SHOW_IN_LABELS = { both: "Both", footer: "Footer only", "contact-modal": "Contact modal" };
+const LOCATIONS = [
+  { value: "navbar",        label: "Navbar icons (top right)"   },
+  { value: "footer",        label: "Footer column"               },
+  { value: "contact-modal", label: "Contact modal options"       },
+  { value: "hero",          label: "Hero section social icons"   },
+];
+
+const EMPTY = { name: "", url: "", logo: "", iconImageUrl: "", iconPublicId: "", showIn: ["navbar"], order: 0 };
+
+function LocationCheckboxes({ selected, onChange }) {
+  function toggle(val) {
+    const next = selected.includes(val)
+      ? selected.filter(v => v !== val)
+      : [...selected, val];
+    onChange(next);
+  }
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+      {LOCATIONS.map(loc => (
+        <label key={loc.value} style={{ display: "flex", alignItems: "center", gap: "7px", color: "#bcc4ba", fontSize: "0.875rem", cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={selected.includes(loc.value)}
+            onChange={() => toggle(loc.value)}
+            style={{ accentColor: "#059212", width: "15px", height: "15px" }}
+          />
+          {loc.label}
+        </label>
+      ))}
+    </div>
+  );
+}
 
 function LinkForm({ form, setForm, onSubmit, saving, onCancel, isNew }) {
   const [uploading, setUploading] = useState(false);
@@ -46,13 +76,13 @@ function LinkForm({ form, setForm, onSubmit, saving, onCancel, isNew }) {
         <FormField label="Platform Name">
           <AdminInput value={form.name} onChange={set("name")} placeholder="e.g. LinkedIn" required />
         </FormField>
-        <FormField label="Text Logo (fallback if no image)">
-          <AdminInput value={form.logo} onChange={set("logo")} placeholder="in  or  GH  or  🏆" />
+        <FormField label="Text Logo (fallback)">
+          <AdminInput value={form.logo} onChange={set("logo")} placeholder="in  GH  🏆  fb" />
         </FormField>
       </FormRow>
 
       {/* Icon image upload */}
-      <FormField label="Icon Image (optional — overrides text logo)">
+      <FormField label="Icon Image (overrides text logo in navbar/footer)">
         <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
           {form.iconImageUrl && (
             <div style={{ width: "32px", height: "32px", position: "relative", borderRadius: "6px", overflow: "hidden", border: "1px solid #02275b", flexShrink: 0 }}>
@@ -66,26 +96,26 @@ function LinkForm({ form, setForm, onSubmit, saving, onCancel, isNew }) {
           {uploadMsg && <span style={{ fontSize: "0.75rem", color: uploadMsg.startsWith("✓") ? "#06D001" : "#ef4444" }}>{uploadMsg}</span>}
           <AdminInput value={form.iconImageUrl} onChange={set("iconImageUrl")} placeholder="or paste icon URL" />
         </div>
-        <div style={{ color: "#bcc4ba", fontSize: "0.75rem", marginTop: "4px" }}>
-          This icon shows in the nav bar and footer. Leave empty to use the text logo above.
-        </div>
       </FormField>
 
       <FormField label="Profile URL">
         <AdminInput value={form.url} onChange={set("url")} placeholder="https://linkedin.com/in/…" required />
       </FormField>
-      <FormRow>
-        <FormField label="Show In">
-          <AdminSelect value={form.showIn} onChange={set("showIn")}>
-            <option value="both">Both (nav icons + footer + contact modal)</option>
-            <option value="footer">Footer only</option>
-            <option value="contact-modal">Contact modal only</option>
-          </AdminSelect>
-        </FormField>
-        <FormField label="Display Order">
-          <AdminInput value={form.order} onChange={set("order")} type="number" placeholder="1" />
-        </FormField>
-      </FormRow>
+
+      {/* Location checkboxes */}
+      <FormField label="Show In (select all that apply)">
+        <LocationCheckboxes
+          selected={Array.isArray(form.showIn) ? form.showIn : [form.showIn || "navbar"]}
+          onChange={vals => setForm(f => ({ ...f, showIn: vals }))}
+        />
+        <div style={{ color: "#bcc4ba", fontSize: "0.75rem", marginTop: "5px" }}>
+          Navbar = top-right icon buttons · Hero = social icons under buttons · Footer = footer column · Contact modal = contact options
+        </div>
+      </FormField>
+
+      <FormField label="Display Order">
+        <AdminInput value={form.order} onChange={set("order")} type="number" placeholder="1" />
+      </FormField>
     </AdminForm>
   );
 }
@@ -98,7 +128,11 @@ export default function SocialLinksManager() {
   const [msg, setMsg]             = useState({ type: "", text: "" });
 
   function openAdd() { setEditingId("new"); setForm(EMPTY); setMsg({ type: "", text: "" }); }
-  function openEdit(l) { setEditingId(l._id); setForm({ ...l, iconPublicId: l.iconPublicId || "", iconImageUrl: l.iconImageUrl || "" }); setMsg({ type: "", text: "" }); }
+  function openEdit(l) {
+    setEditingId(l._id);
+    setForm({ ...l, showIn: Array.isArray(l.showIn) ? l.showIn : [l.showIn || "navbar"], iconPublicId: l.iconPublicId || "", iconImageUrl: l.iconImageUrl || "" });
+    setMsg({ type: "", text: "" });
+  }
   function cancel() { setEditingId(null); setForm(EMPTY); }
 
   async function handleSubmit(e) {
@@ -121,14 +155,17 @@ export default function SocialLinksManager() {
     if (res.ok) { setMsg({ type: "success", text: "Deleted." }); refetch(); }
   }
 
+  function renderLocations(showIn) {
+    const locs = Array.isArray(showIn) ? showIn : [showIn || "navbar"];
+    return locs.map(l => LOCATIONS.find(x => x.value === l)?.label || l).join(", ");
+  }
+
   return (
     <AdminSection title="Social & Profile Links" action={<AddButton onClick={openAdd} />}>
       <AlertBox type={msg.type} message={msg.text} />
 
       <div style={{ color: "#bcc4ba", fontSize: "0.813rem", marginBottom: "1rem", padding: "10px 14px", background: "#011428", borderRadius: "6px", border: "1px solid #02275b" }}>
-        💡 <strong style={{ color: "white" }}>Both</strong> = nav bar icons + footer + contact modal &nbsp;|&nbsp;
-        <strong style={{ color: "white" }}>Footer only</strong> = footer column &nbsp;|&nbsp;
-        <strong style={{ color: "white" }}>Contact modal only</strong> = contact options. Upload an icon image to replace text logos.
+        💡 Use checkboxes to control exactly where each link appears. One link can appear in multiple locations simultaneously.
       </div>
 
       {editingId === "new" && (
@@ -137,7 +174,7 @@ export default function SocialLinksManager() {
         </div>
       )}
 
-      <AdminTable headers={["Icon", "Platform", "URL", "Show In", "Order", "Actions"]}>
+      <AdminTable headers={["Icon", "Platform", "Locations", "Order", "Actions"]}>
         {loading
           ? <AdminTr><AdminTd muted>Loading…</AdminTd></AdminTr>
           : links?.map(l => (
@@ -151,11 +188,9 @@ export default function SocialLinksManager() {
                   </AdminTd>
                   <AdminTd>
                     <div style={{ fontWeight: 600, color: "white" }}>{l.name}</div>
+                    <div style={{ fontSize: "0.75rem", color: "#bcc4ba", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.url}</div>
                   </AdminTd>
-                  <AdminTd muted>
-                    <span style={{ fontSize: "0.75rem", display: "block", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.url}</span>
-                  </AdminTd>
-                  <AdminTd><StatusBadge label={SHOW_IN_LABELS[l.showIn] || l.showIn} type={l.showIn === "both" ? "current" : "default"} /></AdminTd>
+                  <AdminTd muted><span style={{ fontSize: "0.75rem" }}>{renderLocations(l.showIn)}</span></AdminTd>
                   <AdminTd muted>{l.order}</AdminTd>
                   <AdminTd>
                     <EditBtn onClick={() => editingId === l._id ? cancel() : openEdit(l)} />
@@ -164,7 +199,7 @@ export default function SocialLinksManager() {
                 </AdminTr>
                 {editingId === l._id && (
                   <tr>
-                    <td colSpan={6} style={{ padding: 0 }}>
+                    <td colSpan={5} style={{ padding: 0 }}>
                       <div style={{ padding: "1rem", background: "#011428", borderTop: "2px solid #059212", borderBottom: "1px solid #02275b" }}>
                         <LinkForm form={form} setForm={setForm} onSubmit={handleSubmit} saving={saving} onCancel={cancel} isNew={false} />
                       </div>

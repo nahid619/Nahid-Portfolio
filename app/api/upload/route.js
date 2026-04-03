@@ -38,41 +38,31 @@ export async function POST(request) {
     const buffer = Buffer.from(bytes);
     const isCV   = type === "cv";
 
-    let result;
+    // KEY FIX: Upload PDF as resource_type "image" with format "pdf"
+    // This stores it as an image-type asset which Cloudinary serves publicly
+    // without authentication. resource_type "raw" always gives 401 on free tier.
+    const uploadOptions = {
+      folder,
+      resource_type: "image",
+      format:        isCV ? "pdf" : undefined,
+      access_mode:   "public",
+      type:          "upload",
+      ...(isCV && { public_id: `cv_nahid_${Date.now()}` }),
+      ...(!isCV && { quality: "auto" }),
+    };
 
-    if (isCV) {
-      // Upload PDF as resource_type "raw" with access_mode "public"
-      // This is the correct approach — raw keeps the PDF intact and accessible
-      result = await uploadBuffer(buffer, {
-        folder,
-        resource_type: "raw",
-        type:          "upload",
-        access_mode:   "public",
-        public_id:     `cv_nahid_${Date.now()}`,
-        format:        "pdf",
-        use_filename:  false,
-      });
-      console.log("[Upload CV] URL:", result.secure_url);
-    } else {
-      // Images and SVGs — auto detect, optimize
-      result = await uploadBuffer(buffer, {
-        folder,
-        resource_type: "auto",
-        type:          "upload",
-        access_mode:   "public",
-        quality:       "auto",
-      });
-      console.log("[Upload Image] URL:", result.secure_url);
-    }
+    const result = await uploadBuffer(buffer, uploadOptions);
+    console.log(`[Upload] OK — ${result.secure_url}`);
 
-    // Delete old file from Cloudinary if replacing
+    // Delete old file if replacing
     if (oldPublicId) {
       try {
+        // Both image and image/pdf are resource_type "image"
         await cloudinary.uploader.destroy(oldPublicId, {
-          resource_type: oldResType === "cv" ? "raw" : "image",
+          resource_type: "image",
           type: "upload",
         });
-        console.log("[Upload] Deleted old:", oldPublicId);
+        console.log(`[Upload] Deleted old: ${oldPublicId}`);
       } catch (e) {
         console.warn("[Upload] Could not delete old:", e.message);
       }
@@ -89,7 +79,7 @@ export async function POST(request) {
   } catch (error) {
     console.error("[Upload Error]", error);
     return NextResponse.json(
-      { message: error.message || "Upload failed. Check Cloudinary credentials." },
+      { message: error.message || "Upload failed" },
       { status: 500 }
     );
   }
