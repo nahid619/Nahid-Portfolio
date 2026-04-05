@@ -6,7 +6,9 @@ import Image from "next/image";
 import { useFetch } from "@/hooks/useFetch";
 import { SectionWrapper, SectionHeader, ArrowNav, SkeletonLoader } from "@/components/shared";
 
-const VISIBLE = 4; // cards visible at once
+const VISIBLE   = 3;    // cards visible at once
+const CARD_W    = 220;  // fixed card width in px
+const CARD_GAP  = 16;   // gap between cards in px
 
 export default function CertSection() {
   const { data: certs, loading } = useFetch("/api/certifications");
@@ -27,49 +29,59 @@ export default function CertSection() {
       setIdx((i) => (i >= maxIdx ? 0 : i + 1));
     }, 3000);
     return () => clearInterval(timer);
-  }, [certs?.length, maxIdx]); // ✅ both are numbers — stable
+  }, [certs?.length, maxIdx]);
 
   return (
     <SectionWrapper id="certification">
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1.5rem" }}>
         <SectionHeader title="Certifications" subtitle="Training and certifications" />
 
-        {/* Cards strip */}
+        {/* Cards strip — overflow hidden clips cards outside the visible window */}
         <div style={{ overflow: "hidden" }}>
           <div
             style={{
               display: "flex",
-              gap: "12px",
-              transform: `translateX(calc(-${idx} * (160px + 12px)))`,
+              gap: `${CARD_GAP}px`,
+              transform: `translateX(calc(-${idx} * ${CARD_W + CARD_GAP}px))`,
               transition: "transform 0.45s cubic-bezier(0.4,0,0.2,1)",
             }}
           >
             {loading
               ? Array.from({ length: VISIBLE }).map((_, i) => (
-                  <div key={i} style={{ minWidth: "160px", flexShrink: 0 }}>
-                    <SkeletonLoader variant="card" height="120px" />
-                    <SkeletonLoader variant="line" width="80%" style={{ marginTop: "8px" }} />
+                  <div key={i} style={{ width: `${CARD_W}px`, flexShrink: 0 }}>
+                    <SkeletonLoader variant="card" height="130px" />
+                    <div style={{ marginTop: "8px", height: "52px", borderRadius: "6px", background: "linear-gradient(90deg,#02275b 25%,#02356e 50%,#02275b 75%)", backgroundSize: "200% 100%", animation: "certShimmer 1.5s ease-in-out infinite" }} />
                   </div>
                 ))
               : certs?.map((cert) => (
                   <div
                     key={cert._id}
                     style={{
-                      minWidth: "160px",
+                      // ── Fixed identical size for every card ──
+                      width:     `${CARD_W}px`,
                       flexShrink: 0,
                       background: "#00193b",
                       border: "1px solid #02275b",
                       borderRadius: "10px",
                       overflow: "hidden",
-                      transition: "border-color 0.2s",
+                      transition: "border-color 0.2s, box-shadow 0.2s",
+                      display: "flex",
+                      flexDirection: "column",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#059212")}
-                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#02275b")}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = "#059212";
+                      e.currentTarget.style.boxShadow = "0 4px 16px rgba(5,146,18,0.2)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "#02275b";
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
                   >
-                    {/* Image */}
+                    {/* Image area — fixed height */}
                     <div
                       style={{
-                        height: "110px",
+                        height: "130px",
+                        flexShrink: 0,
                         background: "#02275b",
                         display: "flex",
                         alignItems: "center",
@@ -84,25 +96,40 @@ export default function CertSection() {
                           alt={cert.title}
                           fill
                           style={{ objectFit: "cover" }}
-                          sizes="160px"
+                          sizes={`${CARD_W}px`}
                         />
                       ) : (
                         <span style={{ fontSize: "2rem" }}>📜</span>
                       )}
                     </div>
 
-                    {/* Title */}
+                    {/* Title area — fixed height, text clamped to 2 lines */}
                     <div
                       style={{
-                        padding: "8px 10px",
-                        color: "#9BEC00",
-                        fontSize: "0.75rem",
-                        fontWeight: 600,
-                        lineHeight: 1.4,
-                        textAlign: "center",
+                        height: "56px",
+                        flexShrink: 0,
+                        padding: "0 10px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
                       }}
                     >
-                      {cert.title}
+                      <span
+                        style={{
+                          color: "#9BEC00",
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          lineHeight: 1.4,
+                          textAlign: "center",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {cert.title}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -142,6 +169,13 @@ export default function CertSection() {
           </div>
         )}
       </div>
+
+      <style>{`
+        @keyframes certShimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
     </SectionWrapper>
   );
 }

@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { TechBadge } from "@/components/shared";
 
@@ -35,19 +36,20 @@ export default function ExperienceModal({ exp, isOpen, onClose }) {
     };
   }, [isOpen, onClose]);
 
+  // Don't render on server or when closed
   if (!isOpen || !exp) return null;
+  if (typeof window === "undefined") return null;
 
   const period   = `${fmt(exp.startDate)} – ${exp.isCurrent ? "Present" : fmt(exp.endDate) || "Present"}`;
   const duration = calcDuration(exp.startDate, exp.endDate, exp.isCurrent);
 
-  return (
+  const modal = (
     <div
       onClick={onClose}
       style={{
-        // Fixed to viewport — always in exact center of screen
         position: "fixed",
         top: 0, left: 0, right: 0, bottom: 0,
-        zIndex: 99999,
+        zIndex: 9000,
         background: "rgba(1,20,40,0.88)",
         backdropFilter: "blur(6px)",
         display: "flex",
@@ -65,15 +67,16 @@ export default function ExperienceModal({ exp, isOpen, onClose }) {
         .exp-modal-body::-webkit-scrollbar-thumb { background:#059212; border-radius:3px; }
       `}</style>
 
-      {/* Panel — stop propagation so clicking inside doesn't close */}
+      {/* Panel */}
       <div
         onClick={e => e.stopPropagation()}
         style={{
+          position: "relative",    /* ← for absolute × button */
           background: "#00193b",
           border: "1px solid #059212",
           borderRadius: "16px",
           width: "100%",
-          maxWidth: "640px",     // wide
+          maxWidth: "640px",
           maxHeight: "80vh",
           display: "flex",
           flexDirection: "column",
@@ -81,8 +84,38 @@ export default function ExperienceModal({ exp, isOpen, onClose }) {
           boxShadow: "0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(9,146,18,0.25)",
         }}
       >
-        {/* Scrollable body */}
-        <div className="exp-modal-body" style={{ overflowY: "auto", flex: 1, padding: "28px 28px 20px" }}>
+        {/* × button — absolutely pinned to top-right, always visible */}
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          style={{
+            position: "absolute",
+            top: "14px",
+            right: "14px",
+            zIndex: 10,
+            background: "rgba(2,39,91,0.85)",
+            border: "1px solid #02275b",
+            color: "#bcc4ba",
+            borderRadius: "50%",
+            width: "30px",
+            height: "30px",
+            cursor: "pointer",
+            fontSize: "16px",
+            lineHeight: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            transition: "border-color 0.2s, color 0.2s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "#059212"; e.currentTarget.style.color = "white"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "#02275b"; e.currentTarget.style.color = "#bcc4ba"; }}
+        >
+          ×
+        </button>
+
+        {/* Scrollable body — padding-top leaves room under × button */}
+        <div className="exp-modal-body" style={{ overflowY: "auto", flex: 1, padding: "28px 28px 20px", paddingTop: "52px" }}>
 
           {/* Company header */}
           <div style={{ display: "flex", gap: "16px", alignItems: "flex-start", marginBottom: "24px" }}>
@@ -98,7 +131,7 @@ export default function ExperienceModal({ exp, isOpen, onClose }) {
               }
             </div>
 
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, paddingRight: "20px" }}>
               <h2 style={{ color: "white", fontSize: "1.2rem", fontWeight: 700, margin: "0 0 5px", lineHeight: 1.3 }}>
                 {exp.role}
               </h2>
@@ -117,7 +150,7 @@ export default function ExperienceModal({ exp, isOpen, onClose }) {
           {/* Divider */}
           <div style={{ height: "1px", background: "#02275b", marginBottom: "20px" }} />
 
-          {/* Description — scrolls within modal */}
+          {/* Description */}
           {exp.description && (
             <div style={{ marginBottom: "22px" }}>
               <SectionLabel>Description</SectionLabel>
@@ -138,7 +171,7 @@ export default function ExperienceModal({ exp, isOpen, onClose }) {
           )}
         </div>
 
-        {/* Fixed footer with action buttons */}
+        {/* Fixed footer */}
         <div style={{
           padding: "16px 28px",
           borderTop: "1px solid #02275b",
@@ -189,6 +222,10 @@ export default function ExperienceModal({ exp, isOpen, onClose }) {
       </div>
     </div>
   );
+
+  // Portal into document.body — fixes position:fixed being trapped inside
+  // SectionWrapper's transform (translateY) stacking context
+  return createPortal(modal, document.body);
 }
 
 function SectionLabel({ children }) {
