@@ -136,7 +136,7 @@ export default function HeroSection({ onContactClick }) {
                 letterSpacing: "-0.02em",
               }}
             >
-              Hi, I'm{" "}
+              Hi, I&apos;m{" "}
               <span
                 style={{
                   background: "linear-gradient(135deg, #06D001, #9BEC00)",
@@ -194,9 +194,7 @@ export default function HeroSection({ onContactClick }) {
               </button>
 
               <a
-                href={profile?.cvFileUrl || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/api/cv-download"
                 className="hero-contact-btn"
                 style={{
                   background: "transparent",

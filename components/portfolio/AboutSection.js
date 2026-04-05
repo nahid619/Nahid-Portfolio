@@ -97,12 +97,10 @@ export default function AboutSection() {
               ))}
             </div>
 
-            {/* Download CV — uses Cloudinary URL from profile */}
+            {/* Download CV — proxied through /api/cv-download to avoid Cloudinary 401 */}
             <div className="about-buttons">
               <a
-                href={profile?.cvFileUrl || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/api/cv-download"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
