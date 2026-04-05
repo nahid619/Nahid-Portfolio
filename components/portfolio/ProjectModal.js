@@ -1,3 +1,4 @@
+// components/portfolio/ProjectModal.js
 "use client";
 
 import Image from "next/image";

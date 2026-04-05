@@ -1,3 +1,4 @@
+// components/shared/TechBadge.js
 /**
  * TechBadge
  * Small colored pill/tag for tech stack, skills, etc.

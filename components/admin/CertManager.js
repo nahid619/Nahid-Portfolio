@@ -1,3 +1,4 @@
+// components/admin/CertManager.js
 "use client";
 
 import { useState } from "react";

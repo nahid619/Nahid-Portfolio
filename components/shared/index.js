@@ -1,3 +1,4 @@
+// components/shared/index.js
 export { default as SectionWrapper } from "./SectionWrapper";
 export { default as SectionHeader } from "./SectionHeader";
 export { default as TabGroup } from "./TabGroup";

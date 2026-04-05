@@ -1,18 +1,24 @@
+// components/admin/ProjectsManager.js
 "use client";
 
 import { useState } from "react";
 import React from "react";
 import Image from "next/image";
 import { useFetch } from "@/hooks/useFetch";
+import CategoryPanel from "./CategoryPanel";
 import {
   AdminSection, AddButton, AdminTable, AdminTr, AdminTd,
   EditBtn, DeleteBtn, AdminForm, FormRow, FormField,
   AdminInput, AdminTextarea, AdminSelect, StatusBadge, AlertBox,
 } from "./AdminUI";
 
-const EMPTY = { title: "", category: "sqa", description: "", highlights: "", challenges: "", techStack: "", projectImageUrl: "", projectImagePublicId: "", videoUrl: "", githubUrl: "", liveUrl: "", publishedDate: "", order: 0 };
+const EMPTY = {
+  title: "", category: "salesforce", description: "", highlights: "",
+  challenges: "", techStack: "", projectImageUrl: "", projectImagePublicId: "",
+  videoUrl: "", githubUrl: "", liveUrl: "", publishedDate: "", order: 0,
+};
 
-function ProjectForm({ form, setForm, onSubmit, saving, onCancel, isNew }) {
+function ProjectForm({ form, setForm, onSubmit, saving, onCancel, isNew, categoryOptions }) {
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState("");
 
@@ -49,9 +55,7 @@ function ProjectForm({ form, setForm, onSubmit, saving, onCancel, isNew }) {
         </FormField>
         <FormField label="Category">
           <AdminSelect value={form.category} onChange={set("category")}>
-            <option value="sqa">SQA</option>
-            <option value="salesforce">Salesforce</option>
-            <option value="web">Web</option>
+            {categoryOptions.map(c => <option key={c} value={c}>{c}</option>)}
           </AdminSelect>
         </FormField>
       </FormRow>
@@ -59,15 +63,29 @@ function ProjectForm({ form, setForm, onSubmit, saving, onCancel, isNew }) {
       <FormField label="Project Image">
         <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
           {form.projectImageUrl && (
-            <div style={{ width: "70px", height: "48px", position: "relative", borderRadius: "4px", overflow: "hidden", border: "1px solid #02275b", flexShrink: 0 }}>
+            <div style={{
+              width: "70px", height: "48px", position: "relative",
+              borderRadius: "4px", overflow: "hidden",
+              border: "1px solid #02275b", flexShrink: 0,
+            }}>
               <Image src={form.projectImageUrl} alt="preview" fill style={{ objectFit: "cover" }} sizes="70px" />
             </div>
           )}
-          <label style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#02275b", color: "white", padding: "7px 14px", borderRadius: "6px", fontSize: "0.813rem", cursor: uploading ? "not-allowed" : "pointer", fontWeight: 600, opacity: uploading ? 0.7 : 1, flexShrink: 0 }}>
+          <label style={{
+            display: "inline-flex", alignItems: "center", gap: "6px",
+            background: "#02275b", color: "white",
+            padding: "7px 14px", borderRadius: "6px",
+            fontSize: "0.813rem", cursor: uploading ? "not-allowed" : "pointer",
+            fontWeight: 600, opacity: uploading ? 0.7 : 1, flexShrink: 0,
+          }}>
             {uploading ? "Uploading…" : form.projectImageUrl ? "Replace Image" : "Upload Image"}
             <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: "none" }} disabled={uploading} />
           </label>
-          {uploadMsg && <span style={{ fontSize: "0.75rem", color: uploadMsg.startsWith("✓") ? "#06D001" : "#ef4444" }}>{uploadMsg}</span>}
+          {uploadMsg && (
+            <span style={{ fontSize: "0.75rem", color: uploadMsg.startsWith("✓") ? "#06D001" : "#ef4444" }}>
+              {uploadMsg}
+            </span>
+          )}
           <AdminInput value={form.projectImageUrl} onChange={set("projectImageUrl")} placeholder="or paste image URL" />
         </div>
       </FormField>
@@ -109,24 +127,36 @@ function ProjectForm({ form, setForm, onSubmit, saving, onCancel, isNew }) {
 
 export default function ProjectsManager() {
   const { data: projects, loading, refetch } = useFetch("/api/projects");
+  // Fetch categories to populate the category dropdown dynamically
+  const { data: categories } = useFetch("/api/categories?section=projects");
+
   const [editingId, setEditingId] = useState(null);
   const [form, setForm]           = useState(EMPTY);
   const [saving, setSaving]       = useState(false);
   const [msg, setMsg]             = useState({ type: "", text: "" });
 
+  // Build category options from DB (exclude any "All" tab)
+  const categoryOptions = categories
+    ? categories.filter(c => c.value !== "").map(c => c.value)
+    : ["salesforce", "web", "sqa"];
+
   function openAdd() {
-    setEditingId("new"); setForm(EMPTY); setMsg({ type: "", text: "" });
+    setEditingId("new");
+    setForm({ ...EMPTY, category: categoryOptions[0] || "salesforce" });
+    setMsg({ type: "", text: "" });
   }
+
   function openEdit(p) {
     setEditingId(p._id);
     setForm({
       ...p,
-      techStack:  Array.isArray(p.techStack)  ? p.techStack.join(", ")  : (p.techStack  || ""),
-      highlights: Array.isArray(p.highlights) ? p.highlights.join("\n") : (p.highlights || ""),
+      techStack:           Array.isArray(p.techStack)  ? p.techStack.join(", ")  : (p.techStack  || ""),
+      highlights:          Array.isArray(p.highlights) ? p.highlights.join("\n") : (p.highlights || ""),
       projectImagePublicId: p.projectImagePublicId || "",
     });
     setMsg({ type: "", text: "" });
   }
+
   function cancel() { setEditingId(null); setForm(EMPTY); }
 
   async function handleSubmit(e) {
@@ -142,11 +172,24 @@ export default function ProjectsManager() {
       const isNew  = editingId === "new";
       const url    = isNew ? "/api/projects" : `/api/projects/${editingId}`;
       const method = isNew ? "POST" : "PUT";
-      const res    = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      if (res.ok) { setMsg({ type: "success", text: isNew ? "Project added!" : "Project updated!" }); refetch(); cancel(); }
-      else { const d = await res.json(); setMsg({ type: "error", text: d.message || "Failed." }); }
-    } catch { setMsg({ type: "error", text: "Network error." }); }
-    finally { setSaving(false); }
+      const res    = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        setMsg({ type: "success", text: isNew ? "Project added!" : "Project updated!" });
+        refetch();
+        cancel();
+      } else {
+        const d = await res.json();
+        setMsg({ type: "error", text: d.message || "Failed." });
+      }
+    } catch {
+      setMsg({ type: "error", text: "Network error." });
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleDelete(id, title) {
@@ -157,14 +200,35 @@ export default function ProjectsManager() {
 
   return (
     <AdminSection title="Projects" action={<AddButton onClick={openAdd} />}>
+
+      {/* ── Category tab manager ── */}
+      <CategoryPanel section="projects" />
+
+      {/* ── Alerts ── */}
       <AlertBox type={msg.type} message={msg.text} />
 
+      {/* ── Add new project form ── */}
       {editingId === "new" && (
-        <div style={{ background: "#011428", border: "1px solid #059212", borderRadius: "8px", padding: "1rem", marginBottom: "1rem" }}>
-          <ProjectForm form={form} setForm={setForm} onSubmit={handleSubmit} saving={saving} onCancel={cancel} isNew />
+        <div style={{
+          background: "#011428",
+          border: "1px solid #059212",
+          borderRadius: "8px",
+          padding: "1rem",
+          marginBottom: "1rem",
+        }}>
+          <ProjectForm
+            form={form}
+            setForm={setForm}
+            onSubmit={handleSubmit}
+            saving={saving}
+            onCancel={cancel}
+            isNew
+            categoryOptions={categoryOptions}
+          />
         </div>
       )}
 
+      {/* ── Projects table ── */}
       <AdminTable headers={["Image", "Title", "Category", "Tech", "Actions"]}>
         {loading
           ? <AdminTr><AdminTd muted>Loading…</AdminTd></AdminTr>
@@ -173,23 +237,44 @@ export default function ProjectsManager() {
                 <AdminTr>
                   <AdminTd>
                     {p.projectImageUrl
-                      ? <div style={{ width: "48px", height: "34px", position: "relative", borderRadius: "4px", overflow: "hidden" }}><Image src={p.projectImageUrl} alt={p.title} fill style={{ objectFit: "cover" }} sizes="48px" /></div>
+                      ? (
+                        <div style={{ width: "48px", height: "34px", position: "relative", borderRadius: "4px", overflow: "hidden" }}>
+                          <Image src={p.projectImageUrl} alt={p.title} fill style={{ objectFit: "cover" }} sizes="48px" />
+                        </div>
+                      )
                       : <span style={{ fontSize: "1.25rem" }}>📁</span>
                     }
                   </AdminTd>
                   <AdminTd>{p.title}</AdminTd>
                   <AdminTd><StatusBadge label={p.category} type={p.category} /></AdminTd>
-                  <AdminTd muted style={{ fontSize: "0.75rem" }}>{p.techStack?.slice(0, 2).join(", ")}{p.techStack?.length > 2 ? "…" : ""}</AdminTd>
+                  <AdminTd muted style={{ fontSize: "0.75rem" }}>
+                    {p.techStack?.slice(0, 2).join(", ")}{p.techStack?.length > 2 ? "…" : ""}
+                  </AdminTd>
                   <AdminTd>
                     <EditBtn onClick={() => editingId === p._id ? cancel() : openEdit(p)} />
                     <DeleteBtn onClick={() => handleDelete(p._id, p.title)} />
                   </AdminTd>
                 </AdminTr>
+
+                {/* Inline edit form */}
                 {editingId === p._id && (
                   <tr>
                     <td colSpan={5} style={{ padding: 0 }}>
-                      <div style={{ padding: "1rem", background: "#011428", borderTop: "2px solid #059212", borderBottom: "1px solid #02275b" }}>
-                        <ProjectForm form={form} setForm={setForm} onSubmit={handleSubmit} saving={saving} onCancel={cancel} isNew={false} />
+                      <div style={{
+                        padding: "1rem",
+                        background: "#011428",
+                        borderTop: "2px solid #059212",
+                        borderBottom: "1px solid #02275b",
+                      }}>
+                        <ProjectForm
+                          form={form}
+                          setForm={setForm}
+                          onSubmit={handleSubmit}
+                          saving={saving}
+                          onCancel={cancel}
+                          isNew={false}
+                          categoryOptions={categoryOptions}
+                        />
                       </div>
                     </td>
                   </tr>

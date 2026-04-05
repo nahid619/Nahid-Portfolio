@@ -1,3 +1,4 @@
+// app/layout.js
 import { Poppins } from "next/font/google";
 import AuthProvider from "./AuthProvider";
 import "./globals.css";

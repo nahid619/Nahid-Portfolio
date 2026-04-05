@@ -1,3 +1,4 @@
+// components/admin/AdminUI.js
 "use client";
 
 // ── Reusable admin UI building blocks ──────────────────────────

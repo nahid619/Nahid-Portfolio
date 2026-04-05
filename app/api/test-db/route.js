@@ -1,3 +1,4 @@
+// app/api/test-db/route.js
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 

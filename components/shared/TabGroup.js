@@ -1,3 +1,4 @@
+// components/shared/TabGroup.js
 "use client";
 
 /**

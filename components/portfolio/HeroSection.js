@@ -1,3 +1,4 @@
+// components/portfolio/HeroSection.js
 "use client";
 
 import { useState, useEffect } from "react";

@@ -1,3 +1,4 @@
+// components/shared/SkeletonLoader.js
 "use client";
 
 /**

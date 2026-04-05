@@ -1,3 +1,4 @@
+// components/shared/SectionWrapper.js
 "use client";
 
 import { useEffect, useRef, useState } from "react";

@@ -1,3 +1,4 @@
+// components/shared/SectionHeader.js
 /**
  * SectionHeader
  * The centered title + subtitle pattern used above every section.

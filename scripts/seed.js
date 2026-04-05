@@ -285,6 +285,28 @@ async function seed() {
     ]);
     console.log("✅ Qualifications seeded");
 
+    // ── 8. CATEGORIES ────────────────────────────────────────────
+    // Add this block to scripts/seed.js right before the final console.log
+    // Place it after the "── 7. QUALIFICATIONS ──" block
+
+    await db.collection("categories").deleteMany({});
+    await db.collection("categories").insertMany([
+      // Skills tabs — default active = Salesforce (order:1)
+      { name: "Salesforce",  value: "salesforce",  section: "skills",   order: 1, createdAt: new Date() },
+      { name: "SQA",         value: "sqa",         section: "skills",   order: 2, createdAt: new Date() },
+      { name: "Programming", value: "programming", section: "skills",   order: 3, createdAt: new Date() },
+      { name: "Web",         value: "web",         section: "skills",   order: 4, createdAt: new Date() },
+      { name: "All",         value: "",            section: "skills",   order: 5, createdAt: new Date() },
+
+      // Projects tabs — default active = Salesforce (order:1)
+      { name: "Salesforce",  value: "salesforce",  section: "projects", order: 1, createdAt: new Date() },
+      { name: "Web",         value: "web",         section: "projects", order: 2, createdAt: new Date() },
+      { name: "SQA",         value: "sqa",         section: "projects", order: 3, createdAt: new Date() },
+    ]);
+    console.log("✅ Categories seeded");
+
+
+
     console.log("\n🎉 All collections seeded successfully!");
   } catch (error) {
     console.error("❌ Seed error:", error);

@@ -1,3 +1,4 @@
+// components/portfolio/ProjectsSection.js
 "use client";
 
 import { useState } from "react";
@@ -7,21 +8,28 @@ import { useFetch } from "@/hooks/useFetch";
 import { SectionWrapper, SectionHeader, TabGroup, TechBadge, SkeletonCard } from "@/components/shared";
 import ProjectModal from "./ProjectModal";
 
-const TABS = [
-  { label: "Salesforce", value: "salesforce" },
-  { label: "SQA",        value: "sqa"        },
-  { label: "Web",        value: "web"        },
-];
-
 export default function ProjectsSection() {
-  const [activeTab, setActiveTab]       = useState("sqa");
+  // Fetch tabs from DB — sorted by order ascending
+  const { data: categories, loading: catsLoading } = useFetch("/api/categories?section=projects");
+
+  // undefined = user has not clicked a tab yet
+  const [activeTab, setActiveTab]       = useState(undefined);
   const [selectedProject, setSelected] = useState(null);
 
-  const { data: projects, loading } = useFetch("/api/projects", {
-    params: { category: activeTab },
+  // Derive the real active tab: user choice OR first DB category OR null (skip fetch)
+  // No useEffect needed — computed inline on every render, no cascading setState
+  const effectiveTab = activeTab !== undefined ? activeTab : (categories?.[0]?.value ?? null);
+
+  // Fetch projects — skip until effectiveTab resolves
+  const { data: projects, loading: projectsLoading } = useFetch("/api/projects", {
+    params: effectiveTab && effectiveTab !== "" ? { category: effectiveTab } : {},
+    skip: effectiveTab === null,
   });
 
-  // Show max 3 cards + the "See All" card in the 4th slot
+  // Map DB categories to TabGroup shape
+  const tabs = categories?.map(c => ({ label: c.name, value: c.value })) || [];
+
+  // Show max 3 project cards + the "See All" card in the 4th slot
   const visible = projects?.slice(0, 3) || [];
 
   return (
@@ -29,16 +37,42 @@ export default function ProjectsSection() {
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1.5rem" }}>
         <SectionHeader title="Projects" subtitle="Notable works" />
 
-        <TabGroup tabs={TABS} active={activeTab} onChange={setActiveTab} />
+        {/* Only render tabs once categories have loaded — avoids empty tab flash */}
+        {!catsLoading && tabs.length > 0 && (
+          <TabGroup
+            tabs={tabs}
+            active={effectiveTab ?? ""}
+            onChange={setActiveTab}
+          />
+        )}
 
+        {/* Skeleton tab placeholders while categories load */}
+        {catsLoading && (
+          <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "1.5rem" }}>
+            {[90, 55, 65].map((w, i) => (
+              <div
+                key={i}
+                style={{
+                  width: `${w}px`, height: "32px", borderRadius: "4px",
+                  background: "linear-gradient(90deg,#02275b 25%,#02356e 50%,#02275b 75%)",
+                  backgroundSize: "200% 100%",
+                  animation: "skeletonShimmer 1.5s ease-in-out infinite",
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Projects grid */}
         <div
+          className="projects-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
             gap: "16px",
           }}
         >
-          {loading
+          {projectsLoading
             ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
             : (
               <>
@@ -94,6 +128,13 @@ export default function ProjectsSection() {
         isOpen={!!selectedProject}
         onClose={() => setSelected(null)}
       />
+
+      <style>{`
+        @keyframes skeletonShimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
     </SectionWrapper>
   );
 }
@@ -122,17 +163,15 @@ function ProjectCard({ project, onClick }) {
       }}
     >
       {/* Image */}
-      <div
-        style={{
-          height: "140px",
-          background: "linear-gradient(135deg, #021f40, #059212 120%)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-          position: "relative",
-        }}
-      >
+      <div style={{
+        height: "140px",
+        background: "linear-gradient(135deg, #021f40, #059212 120%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+        position: "relative",
+      }}>
         {project.projectImageUrl ? (
           <Image
             src={project.projectImageUrl}
