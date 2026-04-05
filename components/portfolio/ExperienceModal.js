@@ -100,7 +100,7 @@ export default function ExperienceModal({ exp, isOpen, onClose }) {
             width: "30px",
             height: "30px",
             cursor: "pointer",
-            fontSize: "16px",
+            fontSize: "18px",
             lineHeight: 1,
             display: "flex",
             alignItems: "center",
@@ -108,7 +108,7 @@ export default function ExperienceModal({ exp, isOpen, onClose }) {
             flexShrink: 0,
             transition: "border-color 0.2s, color 0.2s",
           }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = "#059212"; e.currentTarget.style.color = "white"; }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "#00e417"; e.currentTarget.style.color = "white"; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = "#02275b"; e.currentTarget.style.color = "#bcc4ba"; }}
         >
           ×

@@ -21,6 +21,7 @@ A modern, full-stack portfolio website with a complete admin CMS. Built with **N
 - **Admin CMS** — full CRUD for all 9 content sections with inline editing
 - **Dynamic tab categories** — Skills and Projects tab labels are stored in MongoDB. Admin can add, rename, reorder, or delete tabs and changes reflect on the portfolio immediately
 - **Cloudinary storage** — all images (profile photo, skill icons, project images, certificate images), social icons, and the CV PDF are stored on Cloudinary
+- **CV proxy download** — CV is served through a Next.js server-side proxy route (`/api/cv-download`) to avoid Cloudinary 401 errors on direct PDF delivery
 - **MongoDB Atlas** — NoSQL cloud database, free tier
 - **NextAuth.js** — single admin login with JWT sessions (24-hour expiry)
 - **Auto-calculated experience** — total work duration computed from experience entries, shown in About section
@@ -57,6 +58,8 @@ nahid-portfolio-v2/
 │       │       └── route.js               ← NextAuth credentials handler
 │       ├── profile/
 │       │   └── route.js                   ← GET + PUT profile
+│       ├── cv-download/
+│       │   └── route.js                   ← Server-side CV proxy (avoids Cloudinary 401)
 │       ├── experiences/
 │       │   ├── route.js                   ← GET all (sorted latest first) + POST
 │       │   └── [id]/route.js              ← PUT + DELETE experience by ID
@@ -91,7 +94,7 @@ nahid-portfolio-v2/
 │   │   ├── TabGroup.js                    ← Reusable tab switcher (Skills + Projects)
 │   │   ├── SkeletonLoader.js              ← Shimmer loading placeholders (line, circle, card)
 │   │   ├── ArrowNav.js                    ← Left/right arrow navigation buttons
-│   │   ├── Modal.js                       ← Generic modal (scrollable body + fixed footer)
+│   │   ├── Modal.js                       ← Generic modal with portal + pinned × button
 │   │   └── TechBadge.js                   ← Colored pill/tag component
 │   │
 │   ├── portfolio/                         ← Public portfolio section components
@@ -99,15 +102,15 @@ nahid-portfolio-v2/
 │   │   ├── HeroSection.js                 ← Animated blob, name, role, social icons, CV + contact buttons
 │   │   ├── AboutSection.js                ← Profile photo, bio, dynamic stats (projects + exp)
 │   │   ├── ExperienceSection.js           ← 2 latest cards + "See All" card in 3-col grid
-│   │   ├── ExperienceModal.js             ← LinkedIn-style experience detail modal
+│   │   ├── ExperienceModal.js             ← LinkedIn-style modal via createPortal + × button
 │   │   ├── SkillsSection.js               ← DB-driven tab categories + skills grid
 │   │   ├── QualificationSection.js        ← Two-column timeline (DB-driven with hardcoded fallback)
 │   │   ├── ProjectsSection.js             ← DB-driven tab categories + 3 cards + "See All" card
-│   │   ├── ProjectModal.js                ← Scrollable project detail + pinned action buttons
-│   │   ├── CertSection.js                 ← Auto-rotating 3s carousel with dot navigation
+│   │   ├── ProjectModal.js                ← Scrollable project detail + pinned × + action buttons
+│   │   ├── CertSection.js                 ← Auto-rotating 3s carousel, 3 visible, uniform card size
 │   │   ├── ContactSection.js              ← Contact info items + mailto message form
 │   │   ├── ContactModal.js                ← Dynamic contact options from socialLinks (contact-modal)
-│   │   ├── Footer.js                      ← 3-column footer with dynamic social links (footer)
+│   │   ├── Footer.js                      ← 3-column footer, role from DB, fade-in animations
 │   │   └── ScrollToTop.js                 ← Fixed scroll-to-top button (appears after 400px scroll)
 │   │
 │   └── admin/                             ← Admin dashboard components
@@ -139,7 +142,7 @@ nahid-portfolio-v2/
 ├── jsconfig.json                          ← Path aliases (@/ → project root)
 ├── package.json                           ← Dependencies + npm scripts
 ├── postcss.config.mjs                     ← PostCSS config (Tailwind v4)
-├── eslint.config.mjs                      ← ESLint config (Next.js core web vitals)
+├── eslint.config.mjs                      ← ESLint config (no-unescaped-entities off)
 ├── .env.local                             ← Environment variables (never commit!)
 ├── .gitignore                             ← Git ignore rules
 └── README.md                              ← This file
@@ -293,7 +296,7 @@ Access at `/admin`. Login with `ADMIN_USERNAME` + `ADMIN_PASSWORD` from your env
 | **Certifications** | Add / edit / delete certificates with image upload and display order. |
 | **Qualification** | Add / edit / delete education timeline entries (left or right side, custom order). |
 | **Social Links** | Add / edit / delete social/profile links. Each link can be shown in one or more locations: Navbar, Hero, Footer, Contact Modal. |
-| **CV / Resume** | Upload or replace the PDF CV. Stored on Cloudinary. Both "Download CV" buttons on the portfolio use this URL automatically. |
+| **CV / Resume** | Upload or replace the PDF CV. Stored on Cloudinary. Both "Download CV" buttons use the proxy route automatically. |
 
 ### Category Panel (embedded in Skills and Projects)
 
@@ -311,15 +314,18 @@ The **Category Panel** is a collapsible section at the top of both SkillsManager
 ## 📝 Key Behaviours & Notes
 
 - **Skill icons** — Upload SVG or PNG via Admin → Skills. All icons stored on Cloudinary. Skills without an icon show the first 2 letters of the skill name as a fallback.
-- **CV download** — Upload PDF via Admin → CV. Both the Hero section and About section "Download CV" buttons use the stored Cloudinary URL automatically.
+- **CV download** — Upload PDF via Admin → CV. Both "Download CV" buttons route through `/api/cv-download` — a server-side proxy that generates a signed Cloudinary URL and streams the PDF directly to the browser. This avoids the Cloudinary 401 that occurs when browsers try to access PDFs directly.
+- **Cloudinary PDF setting** — In Cloudinary Dashboard → Settings → Security, **"PDF and ZIP files delivery"** must be **checked** for the proxy route to work.
 - **Profile photo** — One photo, used in two places: the animated blob in the Hero section and the circle in the About section. Uploading a new photo automatically removes the old one from Cloudinary.
+- **Job title sync** — `profile.jobTitle` is the single source of truth for the role label. It appears in the Hero section, the Footer, and the About section stats — all pulling from the same DB field. Update it once in Admin → Profile and it updates everywhere.
 - **Experience duration** — Auto-calculated from all experience entries using `lib/calculateExperience.js`. Updates live when entries are added or removed.
 - **Projects count** — Auto-counted from the database. Updates automatically.
-- **Skill/Project tab defaults** — The first tab (lowest `order` number) in the categories collection is the default active tab when the page loads. This is controlled entirely from the admin panel.
+- **Skill/Project tab defaults** — The first tab (lowest `order` number) in the categories collection is the default active tab when the page loads. Controlled entirely from the admin panel — no `useEffect` or cascading setState involved.
+- **Modal centering** — Both `ExperienceModal` and the generic `Modal` use `createPortal` to render into `document.body`. This bypasses the CSS stacking context created by `SectionWrapper`'s `transform` animation, so modals always center correctly in the viewport.
 - **Social links multi-location** — A single social link can appear in multiple locations simultaneously by checking multiple boxes in the admin (Navbar, Hero, Footer, Contact Modal).
 - **Qualification fallback** — If the `qualifications` collection is empty, the section displays hardcoded BSc / HSC / SSC data so the page is never blank.
 - **MongoDB Atlas IP** — Set Network Access to `0.0.0.0/0` in Atlas for Vercel compatibility. Vercel uses dynamic IPs so a fixed IP allowlist will not work.
-- **PDF upload** — CVs are uploaded as `resource_type: "image"` with `format: "pdf"` on Cloudinary. This is intentional — it ensures the file is publicly accessible without authentication on the free tier.
+- **ESLint** — `react/no-unescaped-entities` is turned off in `eslint.config.mjs` so apostrophes in JSX text never need manual escaping.
 
 ---
 
@@ -332,6 +338,7 @@ The **Category Panel** is a collapsible section at the top of both SkillsManager
 | `/experiences` | All work experience entries |
 | `/admin` | Admin login page |
 | `/admin/dashboard` | Admin CMS dashboard (JWT-protected) |
+| `/api/cv-download` | Server-side CV proxy — triggers PDF download |
 
 ---
 
