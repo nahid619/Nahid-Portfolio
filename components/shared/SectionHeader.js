@@ -13,6 +13,7 @@ export default function SectionHeader({ title, subtitle, align = "center" }) {
 
   return (
     <div
+      className="section-header"
       style={{
         textAlign: isLeft ? "left" : "center",
         marginBottom: "2rem",
@@ -50,7 +51,7 @@ export default function SectionHeader({ title, subtitle, align = "center" }) {
           display: isLeft ? "block" : "inline-block",
           height: "2px",
           width: "48px",
-          background: "linear-gradient(90deg, #059212, #9BEC00)",
+          background: "linear-gradient(90deg, #00C896, #00A8FF)",
           borderRadius: "2px",
           marginTop: "10px",
           ...(isLeft ? {} : { marginLeft: "auto", marginRight: "auto" }),

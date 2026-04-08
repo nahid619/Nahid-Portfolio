@@ -37,9 +37,9 @@ export default function ExperienceSection() {
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1.5rem" }}>
         <SectionHeader title="Work Experience" subtitle="Where I've worked — latest first" />
 
-        <div style={{
+        <div className="exp-grid" style={{
           display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
+          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
           gap: "16px",
         }}>
           {loading
@@ -114,6 +114,7 @@ function ExperienceCard({ exp, onClick }) {
         borderRadius: "12px",
         padding: "18px 20px",
         cursor: "pointer",
+        textAlign: "left",
         transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
         // Use margin instead of transform to avoid going under sticky nav
         position: "relative",

@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  allowedDevOrigins: ["192.168.0.104"],
   images: {
     // Allow SVG files from Cloudinary (needed for skill icons)
     dangerouslyAllowSVG: true,

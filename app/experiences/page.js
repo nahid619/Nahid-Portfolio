@@ -34,7 +34,7 @@ export default function AllExperiencesPage() {
     <main style={{ background: "#011428", minHeight: "100vh" }}>
       <NavBar />
 
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "3rem 1.5rem 5rem" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem 1rem 4rem" }}>
         {/* Back link */}
         <Link href="/#experience"
           style={{ display: "inline-flex", alignItems: "center", gap: "6px", color: "#bcc4ba", fontSize: "0.875rem", textDecoration: "none", marginBottom: "2.5rem", transition: "color 0.2s" }}
@@ -74,6 +74,7 @@ export default function AllExperiencesPage() {
                   <div
                     key={exp._id}
                     onClick={() => setSelected(exp)}
+                    className="exp-row"
                     style={{
                       background: "#00193b",
                       border: "1px solid #02275b",
@@ -107,7 +108,7 @@ export default function AllExperiencesPage() {
                     </div>
 
                     {/* Content */}
-                    <div>
+                    <div style={{ textAlign: "left" }}>
                       <h3 style={{ color: "white", fontSize: "1rem", fontWeight: 700, margin: "0 0 3px" }}>{exp.role}</h3>
                       <div style={{ color: "#06D001", fontSize: "0.875rem", marginBottom: "4px" }}>
                         {exp.company}{exp.employmentType ? ` · ${exp.employmentType}` : ""}

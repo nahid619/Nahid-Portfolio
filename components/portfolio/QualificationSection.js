@@ -57,6 +57,7 @@ function QualCard({ item }) {
         textAlign: isLeft ? "left" : "right",
         transition: "border-color 0.2s",
       }}
+      className={`qual-card ${isLeft ? "qual-card-left" : "qual-card-right"}`}
       onMouseEnter={e => e.currentTarget.style.borderColor = "#059212"}
       onMouseLeave={e => e.currentTarget.style.borderColor = "#02275b"}
     >
@@ -94,6 +95,7 @@ export default function QualificationSection() {
           {qualifications.map((item, i) => (
             <div
               key={item._id}
+              className="qual-grid"
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 40px 1fr",
@@ -102,8 +104,8 @@ export default function QualificationSection() {
               }}
             >
               {/* Left slot */}
-              <div>
-                {item.side === "left" ? <QualCard item={item} /> : <span />}
+              <div className="qual-left-slot">
+                {item.side === "left" ? <QualCard item={item} /> : null}
               </div>
 
               {/* Center timeline dot + line */}
@@ -122,8 +124,8 @@ export default function QualificationSection() {
               </div>
 
               {/* Right slot */}
-              <div>
-                {item.side === "right" ? <QualCard item={item} /> : <span />}
+              <div className="qual-right-slot">
+                {item.side === "right" ? <QualCard item={item} /> : null}
               </div>
             </div>
           ))}

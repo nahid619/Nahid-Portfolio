@@ -10,9 +10,27 @@ const VISIBLE   = 3;    // cards visible at once
 const CARD_W    = 220;  // fixed card width in px
 const CARD_GAP  = 16;   // gap between cards in px
 
+function useCardWidth() {
+  const [w, setW] = useState(220);
+  useEffect(() => {
+    function calc() {
+      const vw = window.innerWidth;
+      if (vw < 480) setW(Math.floor((vw - 48) / 2)); // 2 cards fit, minus padding
+      else if (vw < 768) setW(Math.floor((vw - 64) / 2));
+      else setW(220);
+    }
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, []);
+  return w;
+}
+
 export default function CertSection() {
   const { data: certs, loading } = useFetch("/api/certifications");
   const [idx, setIdx] = useState(0);
+  const CARD_W   = useCardWidth();
+  const CARD_GAP = 12;
 
   const maxIdx = Math.max(0, (certs?.length || 0) - VISIBLE);
 
@@ -29,7 +47,7 @@ export default function CertSection() {
       setIdx((i) => (i >= maxIdx ? 0 : i + 1));
     }, 3000);
     return () => clearInterval(timer);
-  }, [certs?.length, maxIdx]);
+  }, [certs?.length, maxIdx, CARD_W]);
 
   return (
     <SectionWrapper id="certification">
@@ -56,6 +74,7 @@ export default function CertSection() {
               : certs?.map((cert) => (
                   <div
                     key={cert._id}
+                    className="cert-card"
                     style={{
                       // ── Fixed identical size for every card ──
                       width:     `${CARD_W}px`,

@@ -8,14 +8,15 @@
 
 /* ── CSS Variables ── */
 :root {
-  --navy:      #011428;
-  --dark-blue: #00193b;
-  --mid-blue:  #02275b;
-  --green:     #059212;
-  --green-2:   #06D001;
-  --lime:      #9BEC00;
-  --muted:     #bcc4ba;
+  --navy:      #010f1e;
+  --dark-blue: #0a1f3d;
+  --mid-blue:  #0d2d5e;
+  --green:     #00c821;
+  --green-2:   #00ff2a;
+  --lime:      #00ff80;
+  --muted:     #b0b8c8;
   --white:     #ffffff;
+  --cta-gradient: linear-gradient(135deg, #00c832, #00ffff);
   --font-sans: var(--font-poppins), 'Poppins', sans-serif;
 }
 
@@ -23,7 +24,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   scroll-padding-top: 70px;
 }
 
@@ -46,13 +47,13 @@ img { max-width: 100%; height: auto; }
 ::-webkit-scrollbar-thumb:hover { background: var(--green-2); }
 
 /* ── Text selection ── */
-::selection { background: rgba(5,146,18,0.25); color: white; }
+::selection { background: rgba(0,200,150,0.25); color: white; }
 
 /* ── Focus ring ── */
 :focus-visible { outline: 2px solid var(--green-2); outline-offset: 2px; border-radius: 3px; }
 
 /* ── Input placeholder ── */
-input::placeholder, textarea::placeholder { color: #2d3d2d; }
+input::placeholder, textarea::placeholder { color: #1e3050; }
 
 /* ── Tab content animation ── */
 @keyframes tabFadeIn {
@@ -61,97 +62,265 @@ input::placeholder, textarea::placeholder { color: #2d3d2d; }
 }
 .tab-fade { animation: tabFadeIn 0.25s ease forwards; }
 
-/* ══════════════════════════
-   MOBILE RESPONSIVE
-══════════════════════════ */
+/* ══════════════════════════════════════════
+   BREAKPOINTS
+   480px  — phones (portrait)
+   768px  — large phones / small tablets
+   1024px — tablets / small laptops
+══════════════════════════════════════════ */
 
-/* Hero: stack on mobile */
+/* ── Global: center ALL section content on mobile ── */
+@media (max-width: 768px) {
+  section {
+    text-align: center;
+  }
+
+  /* Re-align things that should stay left inside centered sections */
+  section ul,
+  section ol {
+    text-align: left;
+    display: inline-block;
+    width: 100%;
+  }
+
+  /* Section headers always center */
+  .section-header {
+    text-align: center !important;
+    align-items: center !important;
+  }
+}
+
+/* ── Hero: stack blob above text, center everything ── */
 @media (max-width: 860px) {
   .hero-grid {
     grid-template-columns: 1fr !important;
-    text-align: center;
+    text-align: center !important;
     gap: 2rem !important;
+    justify-items: center;
+  }
+  .hero-grid > div:first-child {
+    display: flex;
+    flex-direction: column;
+    align-items: center !important;
+    text-align: center !important;
+    width: 100%;
   }
   .hero-blob-wrap {
     order: -1;
     display: flex;
     justify-content: center;
   }
-  .hero-blob-wrap > div:last-child { display: none; } /* hide scroll indicator */
-  .hero-buttons { justify-content: center !important; }
-  .hero-desc { margin-left: auto; margin-right: auto; }
+  .hero-blob-wrap > div:last-child { display: none; }
+  .hero-buttons {
+    justify-content: center !important;
+    flex-wrap: wrap;
+  }
+  .hero-desc {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center !important;
+  }
 }
 
-/* About: stack photo above text */
-@media (max-width: 640px) {
+/* ── Hero text column alignment ── */
+.hero-text-col {
+  align-items: flex-start;
+}
+@media (max-width: 860px) {
+  .hero-text-col {
+    align-items: center !important;
+    text-align: center !important;
+    width: 100%;
+  }
+  .hero-text-col h1,
+  .hero-text-col h2,
+  .hero-text-col p {
+    text-align: center !important;
+  }
+  .hero-badge-wrap {
+    justify-content: center !important;
+  }
+}
+
+
+/* ── About: stack photo above text, center ── */
+@media (max-width: 768px) {
   .about-grid {
     grid-template-columns: 1fr !important;
-    justify-items: center;
-    text-align: center;
+    justify-items: center !important;
+    text-align: center !important;
   }
-  .about-stats { justify-content: center !important; }
-  .about-buttons { justify-content: center !important; }
+  .about-stats {
+    justify-content: center !important;
+    flex-wrap: wrap;
+  }
+  .about-buttons {
+    justify-content: center !important;
+  }
+  /* Bio paragraph should center on mobile */
+  .about-grid p {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
-/* Experience strip: full width cards */
-@media (max-width: 640px) {
-  .exp-card { min-width: 240px !important; }
+/* About bio — left on desktop, center on mobile */
+@media (max-width: 768px) {
+  .about-bio {
+    text-align: center !important;
+    max-width: 100% !important;
+  }
+  .about-buttons a {
+    width: 100% !important;
+    justify-content: center !important;
+  }
 }
 
-/* Skills grid: 2 cols on mobile */
-@media (max-width: 480px) {
+/* About section — text left on desktop inside the grid */
+@media (min-width: 769px) {
+  .about-grid > div:last-child {
+    text-align: left;
+  }
+}
+
+/* ── Experience: single col on mobile ── */
+@media (max-width: 768px) {
+  .exp-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .exp-card {
+    min-width: unset !important;
+    width: 100% !important;
+  }
+}
+/* ── About CV button: auto-width on desktop, full-width on mobile ── */
+.about-cv-btn {
+  padding: 10px 32px;
+}
+@media (max-width: 768px) {
+  .about-cv-btn {
+    width: 100% !important;
+  }
+}
+
+/* ── Skills grid: 2 cols on small, 1 col on very small ── */
+@media (max-width: 768px) {
   .skills-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
-
-/* Qualification: single col on mobile */
-@media (max-width: 640px) {
-  .qual-grid {
-    grid-template-columns: 1fr 24px !important;
+@media (max-width: 400px) {
+  .skills-grid {
+    grid-template-columns: 1fr !important;
   }
-  .qual-right-slot { display: none !important; }
 }
 
-/* Projects grid: single col on mobile */
-@media (max-width: 480px) {
+/* ── Skill + project cards: center text ── */
+@media (max-width: 768px) {
+  .skills-grid > div,
+  .projects-grid > div,
+  .projects-grid > a {
+    text-align: left; /* cards stay left-aligned internally */
+  }
+}
+
+/* ── Qualification: single col timeline on mobile ── */
+@media (max-width: 640px) {
+  .qual-grid {
+    grid-template-columns: 24px 1fr !important;
+    align-items: start;
+  }
+  .qual-right-slot {
+    display: block !important;
+    grid-column: 2 !important;
+    text-align: left !important;
+  }
+  .qual-left-slot {
+    grid-column: 2 !important;
+    text-align: left !important;
+  }
+    .qual-card-right {
+    text-align: left !important;
+  }
+  .qual-card-right ul {
+    padding: 0 0 0 14px !important;
+    list-style: disc !important;
+  }
+}
+
+/* ── Projects grid: single col on mobile ── */
+@media (max-width: 600px) {
   .projects-grid {
     grid-template-columns: 1fr !important;
   }
 }
 
-/* Cert strip */
-@media (max-width: 480px) {
-  .cert-card { min-width: 130px !important; }
+/* ── Tab group: horizontal scroll on mobile (no wrapping) ── */
+@media (max-width: 768px) {
+  .tab-group {
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 4px;
+    /* hide scrollbar visually */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .tab-group::-webkit-scrollbar { display: none; }
+  .tab-group button {
+    flex-shrink: 0;
+    font-size: 0.813rem !important;
+    padding: 6px 14px !important;
+    white-space: nowrap;
+  }
 }
 
-/* Contact: stack on mobile */
-@media (max-width: 640px) {
+/* ── Cert strip: responsive card width ── */
+@media (max-width: 600px) {
+  .cert-card { min-width: 160px !important; }
+}
+@media (max-width: 400px) {
+  .cert-card { min-width: 140px !important; }
+}
+
+/* ── Contact: stack on mobile ── */
+@media (max-width: 768px) {
   .contact-grid {
     grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+  .contact-grid > div:first-child {
+    text-align: center;
+  }
+  .contact-grid > div:first-child > div {
+    justify-content: center;
   }
 }
 
-/* Footer: stack on mobile */
-@media (max-width: 640px) {
+/* ── Footer: stack on mobile ── */
+@media (max-width: 768px) {
   .footer-grid {
     grid-template-columns: 1fr !important;
-    gap: 1.5rem !important;
+    gap: 2rem !important;
+    text-align: center;
+  }
+  .footer-grid > div:first-child {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .footer-grid > div:nth-child(3) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .footer-grid ul {
+    text-align: center;
   }
 }
 
-/* Nav tabs: wrap on small screens */
-@media (max-width: 480px) {
-  .tab-group {
-    gap: 4px !important;
-  }
-  .tab-group button {
-    font-size: 0.75rem !important;
-    padding: 5px 10px !important;
-  }
-}
-
-/* Admin sidebar: slide-in on mobile */
+/* ── Admin sidebar: slide-in on mobile ── */
 @media (max-width: 768px) {
   .admin-sidebar {
     position: fixed !important;
@@ -171,28 +340,102 @@ input::placeholder, textarea::placeholder { color: #2d3d2d; }
   .mobile-menu-btn { display: flex !important; }
 }
 
-/* All-projects page grid */
-@media (max-width: 480px) {
+/* ── All-projects page grid ── */
+@media (max-width: 600px) {
   .all-projects-grid {
     grid-template-columns: 1fr !important;
   }
 }
 
-/* Scroll to top button */
+/* ── Scroll to top button ── */
 .scroll-top-btn {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
   width: 40px; height: 40px;
-  background: var(--green);
+  background: var(--cta-gradient);
   border: none;
   border-radius: 50%;
   color: white;
   font-size: 1.1rem;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 16px rgba(5,146,18,0.4);
-  transition: transform 0.2s, opacity 0.3s;
+  box-shadow: 0 4px 16px rgba(0,200,150,0.35);
+  transition: transform 0.2s, opacity 0.3s, box-shadow 0.2s;
   z-index: 90;
 }
-.scroll-top-btn:hover { transform: translateY(-3px); }
+.scroll-top-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,200,150,0.5);
+}
+
+/* ── Section padding: tighter on mobile ── */
+@media (max-width: 768px) {
+  .section-wrapper {
+    padding: 3rem 0 2rem !important;
+  }
+}
+
+/* ── All-projects page: single col on small mobile ── */
+@media (max-width: 480px) {
+  .all-projects-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Experiences page: stack row on mobile ── */
+@media (max-width: 600px) {
+  .exp-row {
+    grid-template-columns: auto 1fr !important;
+  }
+  .exp-row > div:last-child {
+    grid-column: 1 / -1;
+    text-align: left;
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+/* ── Section header always centers on mobile ── */
+@media (max-width: 768px) {
+  .section-header {
+    text-align: center !important;
+  }
+  .section-header > div {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block !important;
+  }
+}
+
+/* ── Nav mobile menu items ── */
+@media (max-width: 900px) {
+  .nav-menu-mobile a:last-child {
+    border-bottom: none !important;
+  }
+}
+
+/* ── Skills cards stay left internally ── */
+@media (max-width: 768px) {
+  .skills-grid > div {
+    text-align: left !important;
+  }
+}
+
+/* ── Contact section ── */
+@media (max-width: 768px) {
+  .contact-grid > div:first-child {
+    width: 100%;
+  }
+  .contact-grid > div:first-child > div {
+    width: 100%;
+  }
+}
+
+/* ── Footer social links center on mobile ── */
+@media (max-width: 768px) {
+  .footer-grid > div:nth-child(3) > div {
+    align-items: center;
+    width: 100%;
+  }
+}

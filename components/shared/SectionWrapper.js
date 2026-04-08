@@ -47,7 +47,7 @@ export default function SectionWrapper({
       ref={ref}
       className={`section-wrapper ${className}`}
       style={{
-        padding: "5rem 0 3rem",
+        padding: "clamp(3rem, 6vw, 5rem) 0 clamp(2rem, 4vw, 3rem)",
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(32px)",
         transition: `opacity 0.6s ease ${delay}ms, transform 0.6s ease ${delay}ms`,

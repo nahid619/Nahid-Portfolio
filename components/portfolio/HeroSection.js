@@ -76,6 +76,24 @@ export default function HeroSection({ onContactClick }) {
           transform: translateY(-2px);
           box-shadow: 0 8px 28px rgba(5,146,18,0.45);
         }
+        @media (max-width: 860px) {
+          .hero-contact-btn {
+            width: 100%;
+            justify-content: center;
+          }
+          .hero-social-icons-wrap {
+            justify-content: center;
+            width: 100%;
+            margin-left: 0 !important;
+          }
+          .hero-badge-wrap {
+            justify-content: center !important;
+          }
+          .hero-desc {
+            max-width: 100% !important;
+            text-align: center;
+          }
+        }
       `}</style>
 
       <section
@@ -101,9 +119,9 @@ export default function HeroSection({ onContactClick }) {
           }}
         >
           {/* LEFT: text content */}
-          <div>
+          <div className="hero-text-col" style={{ display: "flex", flexDirection: "column" }}>
             {/* Greeting badge */}
-            <div style={{ ...fadeIn(0), marginBottom: "1.25rem" }}>
+            <div style={{ ...fadeIn(0), marginBottom: "1.25rem", width: "100%", display: "flex", justifyContent: "flex-start" }} className="hero-badge-wrap">
               <span
                 style={{
                   display: "inline-flex",
@@ -136,7 +154,7 @@ export default function HeroSection({ onContactClick }) {
                 letterSpacing: "-0.02em",
               }}
             >
-              Hi, I&apos;m{" "}
+              Hi, I'm{" "}
               <span
                 style={{
                   background: "linear-gradient(135deg, #06D001, #9BEC00)",
@@ -160,10 +178,12 @@ export default function HeroSection({ onContactClick }) {
                 lineHeight: 1.4,
               }}
             >
-              {jobTitle}            </h2>
+              {jobTitle}  
+            </h2>
 
             {/* Description */}
             <p
+              className="hero-desc"
               style={{
                 ...fadeIn(300),
                 color: "#bcc4ba",
@@ -178,12 +198,14 @@ export default function HeroSection({ onContactClick }) {
 
             {/* Buttons + social */}
             <div
+              className="hero-buttons"
               style={{
                 ...fadeIn(400),
                 display: "flex",
                 alignItems: "center",
                 flexWrap: "wrap",
                 gap: "1rem",
+                width: "100%",
               }}
             >
               <button className="hero-contact-btn" onClick={onContactClick}>
@@ -194,7 +216,9 @@ export default function HeroSection({ onContactClick }) {
               </button>
 
               <a
-                href="/api/cv-download"
+                href={profile?.cvFileUrl || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hero-contact-btn"
                 style={{
                   background: "transparent",
@@ -214,7 +238,7 @@ export default function HeroSection({ onContactClick }) {
 
               {/* Social icons — from DB (showIn includes "hero") */}
               {heroLinks && heroLinks.length > 0 && (
-                <div style={{ display: "flex", gap: "8px", marginLeft: "4px" }}>
+                <div className="hero-social-icons-wrap" style={{ display: "flex", gap: "8px", marginLeft: "4px" }}>
                   {heroLinks.map(link => (
                     <a
                       key={link._id}
@@ -239,6 +263,7 @@ export default function HeroSection({ onContactClick }) {
 
           {/* RIGHT: animated blob */}
           <div
+            className="hero-blob-wrap"
             style={{
               ...fadeIn(200),
               display: "flex",

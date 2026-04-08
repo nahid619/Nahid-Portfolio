@@ -79,6 +79,7 @@ export default function SkillsSection() {
                     display: "flex",
                     alignItems: "center",
                     gap: "10px",
+                    textAlign: "left",
                     transition: "transform 0.2s, box-shadow 0.2s",
                     cursor: "default",
                   }}

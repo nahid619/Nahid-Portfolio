@@ -26,6 +26,7 @@ export default function AboutSection() {
             gridTemplateColumns: "auto 1fr",
             gap: "clamp(1.5rem, 4vw, 3rem)",
             alignItems: "start",
+            justifyItems: "center",
           }}
         >
           {/* Photo */}
@@ -64,7 +65,7 @@ export default function AboutSection() {
                 <SkeletonLoader variant="line" width="80%" />
               </div>
             ) : (
-              <p style={{ color: "#bcc4ba", fontSize: "0.938rem", lineHeight: 1.85, marginBottom: "1.75rem" }}>
+              <p style={{ color: "#bcc4ba", fontSize: "0.938rem", lineHeight: 1.85, marginBottom: "1.75rem", textAlign: "left" }} className="about-bio">
                 {profile?.bio}
               </p>
             )}
@@ -98,13 +99,15 @@ export default function AboutSection() {
             </div>
 
             {/* Download CV — proxied through /api/cv-download to avoid Cloudinary 401 */}
-            <div className="about-buttons">
+            <div className="about-buttons" style={{ width: "100%" }}>
               <a
                 href="/api/cv-download"
+                className="about-cv-btn"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
                   gap: "8px",
+                  justifyContent: "center",
                   background: "linear-gradient(135deg, #059212, #06D001)",
                   color: "white",
                   padding: "10px 22px",

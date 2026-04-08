@@ -32,10 +32,15 @@ export default function NavBar() {
 
   useEffect(() => {
     const sections = document.querySelectorAll("section[id]");
+
     const observer = new IntersectionObserver(
       entries => entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); }),
-      { threshold: 0.3 }
+      {
+        rootMargin: "-40% 0px -55% 0px",
+        threshold: 0,
+      }
     );
+
     sections.forEach(s => observer.observe(s));
     return () => observer.disconnect();
   }, []);
@@ -94,16 +99,17 @@ export default function NavBar() {
           </div>
         </nav>
 
-        <div className="nav-menu-mobile" style={{ display: menuOpen ? "flex" : "none", flexDirection:"column", background:"#00193b", borderTop:"1px solid #02275b", padding:"1rem 1.5rem 1.5rem", gap:"12px" }}>
+        <div className="nav-menu-mobile" style={{ display: menuOpen ? "flex" : "none", flexDirection:"column", background:"#00193b", borderTop:"1px solid #02275b", padding:"1rem 1.5rem 1.5rem", gap:"4px" }}>
           {NAV_LINKS.map(link => {
             const id = link.href.replace("#", "");
             return (
-              <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className={`nav-link ${activeSection === id ? "active" : ""}`} style={{ fontSize:"0.938rem", padding:"6px 0" }}>
+              <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className={`nav-link ${activeSection === id ? "active" : ""}`} style={{ fontSize:"1rem", padding:"10px 0", borderBottom:"1px solid rgba(13,45,94,0.5)", textAlign:"center", display:"block" }}>
                 {link.label}
               </a>
             );
           })}
         </div>
+
       </header>
 
       <div style={{ height:"64px" }} />

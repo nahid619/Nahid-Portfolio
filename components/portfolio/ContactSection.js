@@ -29,6 +29,7 @@ export default function ContactSection() {
         <SectionHeader title="Contact Me" subtitle="Get in touch" />
 
         <div
+          className="contact-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
@@ -45,6 +46,7 @@ export default function ContactSection() {
                   alignItems: "flex-start",
                   gap: "14px",
                   marginBottom: "1.5rem",
+                  textAlign: "left",
                 }}
               >
                 <div
@@ -59,7 +61,7 @@ export default function ContactSection() {
                 >
                   {item.icon}
                 </div>
-                <div>
+                <div style={{ textAlign: "left" }}>
                   <div style={{ color: "#06D001", fontSize: "0.813rem", fontWeight: 600, marginBottom: "3px" }}>
                     {item.title}
                   </div>
@@ -124,7 +126,9 @@ export default function ContactSection() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
+                justifyContent: "center",
                 gap: "8px",
+                width: "100%",
                 background: "linear-gradient(135deg, #059212, #06D001)",
                 color: "white",
                 padding: "11px 24px",

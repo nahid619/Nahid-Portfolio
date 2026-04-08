@@ -32,7 +32,7 @@ export default function AllProjectsPage() {
         style={{
           maxWidth: "1200px",
           margin: "0 auto",
-          padding: "3rem 1.5rem 5rem",
+          padding: "2rem 1rem 4rem",
         }}
       >
         {/* Back link */}
@@ -45,7 +45,7 @@ export default function AllProjectsPage() {
             color: "#bcc4ba",
             fontSize: "0.875rem",
             textDecoration: "none",
-            marginBottom: "2.5rem",
+            marginBottom: "1.5rem",
             transition: "color 0.2s",
           }}
           onMouseEnter={(e) => (e.currentTarget.style.color = "#06D001")}
@@ -67,6 +67,7 @@ export default function AllProjectsPage() {
 
         {/* Projects grid */}
         <div
+          className="all-projects-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
@@ -203,7 +204,7 @@ function ProjectCard({ project, index, onClick }) {
       </div>
 
       {/* Body */}
-      <div style={{ padding: "14px 16px" }}>
+      <div style={{ padding: "14px 16px", textAlign: "left" }}>
         <h3
           style={{
             color: "white",

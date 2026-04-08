@@ -98,6 +98,7 @@ export default function ProjectsSection() {
                     borderRadius: "10px",
                     minHeight: "180px",
                     textDecoration: "none",
+                    width: "100%",
                     transition: "background 0.2s, border-color 0.2s",
                     cursor: "pointer",
                   }}
