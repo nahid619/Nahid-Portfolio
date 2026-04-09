@@ -1,6 +1,6 @@
 # Nahid Hasan — Portfolio v2
 
-A modern, full-stack portfolio website with a complete admin CMS. Built with **Next.js 14 (App Router)**, **MongoDB Atlas**, **Cloudinary**, and **NextAuth.js**. Deployed on **Vercel**.
+A modern, full-stack portfolio website with a complete admin CMS. Built with **Next.js (App Router)**, **MongoDB Atlas**, **Cloudinary**, and **NextAuth.js**. Deployed on **Vercel**.
 
 ---
 
@@ -25,8 +25,9 @@ A modern, full-stack portfolio website with a complete admin CMS. Built with **N
 - **MongoDB Atlas** — NoSQL cloud database, free tier
 - **NextAuth.js** — single admin login with JWT sessions (24-hour expiry)
 - **Auto-calculated experience** — total work duration computed from experience entries, shown in About section
-- **Responsive** — mobile, tablet, and desktop layouts with a collapsible hamburger nav
-- **Scroll-to-top** button, active nav link highlighting, and fade-in-on-scroll animations throughout
+- **Smooth scroll navigation** — custom easing scroll (`lib/smoothScroll.js`) used across navbar, footer, scroll-to-top button and hero scroll arrow. Speed controlled via a single `duration` value.
+- **Accurate nav highlighting** — active navbar link uses `IntersectionObserver` with tight `rootMargin` (`-20% 0px -85% 0px`) so the correct section is always highlighted as you scroll
+- **Fully responsive** — mobile, tablet, and desktop layouts with a collapsible hamburger nav, responsive experience grid, and properly constrained card widths on all screen sizes
 
 ---
 
@@ -98,10 +99,10 @@ nahid-portfolio-v2/
 │   │   └── TechBadge.js                   ← Colored pill/tag component
 │   │
 │   ├── portfolio/                         ← Public portfolio section components
-│   │   ├── NavBar.js                      ← Sticky nav, mobile hamburger, active section highlight
+│   │   ├── NavBar.js                      ← Sticky nav, mobile hamburger, smooth scroll, accurate active highlight
 │   │   ├── HeroSection.js                 ← Animated blob, name, role, social icons, CV + contact buttons
-│   │   ├── AboutSection.js                ← Profile photo, bio, dynamic stats (projects + exp)
-│   │   ├── ExperienceSection.js           ← 2 latest cards + "See All" card in 3-col grid
+│   │   ├── AboutSection.js                ← Profile photo, bio, dynamic stats, auto-width CV button
+│   │   ├── ExperienceSection.js           ← Responsive auto-fill grid, 2 latest cards + "See All" card
 │   │   ├── ExperienceModal.js             ← LinkedIn-style modal via createPortal + × button
 │   │   ├── SkillsSection.js               ← DB-driven tab categories + skills grid
 │   │   ├── QualificationSection.js        ← Two-column timeline (DB-driven with hardcoded fallback)
@@ -110,8 +111,8 @@ nahid-portfolio-v2/
 │   │   ├── CertSection.js                 ← Auto-rotating 3s carousel, 3 visible, uniform card size
 │   │   ├── ContactSection.js              ← Contact info items + mailto message form
 │   │   ├── ContactModal.js                ← Dynamic contact options from socialLinks (contact-modal)
-│   │   ├── Footer.js                      ← 3-column footer, role from DB, fade-in animations
-│   │   └── ScrollToTop.js                 ← Fixed scroll-to-top button (appears after 400px scroll)
+│   │   ├── Footer.js                      ← 3-column footer, smooth scroll quick links, fade-in animations
+│   │   └── ScrollToTop.js                 ← Fixed scroll-to-top button with smooth scroll (appears after 400px)
 │   │
 │   └── admin/                             ← Admin dashboard components
 │       ├── AdminLayout.js                 ← Sidebar nav + top header wrapper (mobile responsive)
@@ -132,7 +133,8 @@ nahid-portfolio-v2/
 ├── lib/
 │   ├── mongodb.js                         ← MongoDB connection singleton (dev global / prod per-request)
 │   ├── cloudinary.js                      ← Cloudinary upload/delete helpers
-│   └── calculateExperience.js             ← Auto-calculate total professional experience duration
+│   ├── calculateExperience.js             ← Auto-calculate total professional experience duration
+│   └── smoothScroll.js                    ← Shared smooth scroll utility with cubic easing (used site-wide)
 │
 ├── scripts/
 │   └── seed.js                            ← One-time DB seed script (run: npm run seed)
@@ -317,10 +319,13 @@ The **Category Panel** is a collapsible section at the top of both SkillsManager
 - **CV download** — Upload PDF via Admin → CV. Both "Download CV" buttons route through `/api/cv-download` — a server-side proxy that generates a signed Cloudinary URL and streams the PDF directly to the browser. This avoids the Cloudinary 401 that occurs when browsers try to access PDFs directly.
 - **Cloudinary PDF setting** — In Cloudinary Dashboard → Settings → Security, **"PDF and ZIP files delivery"** must be **checked** for the proxy route to work.
 - **Profile photo** — One photo, used in two places: the animated blob in the Hero section and the circle in the About section. Uploading a new photo automatically removes the old one from Cloudinary.
-- **Job title sync** — `profile.jobTitle` is the single source of truth for the role label. It appears in the Hero section, the Footer, and the About section stats — all pulling from the same DB field. Update it once in Admin → Profile and it updates everywhere.
+- **Job title sync** — `profile.jobTitle` is the single source of truth for the role label. It appears in the Hero section, the Footer, and the About section — all pulling from the same DB field.
 - **Experience duration** — Auto-calculated from all experience entries using `lib/calculateExperience.js`. Updates live when entries are added or removed.
 - **Projects count** — Auto-counted from the database. Updates automatically.
-- **Skill/Project tab defaults** — The first tab (lowest `order` number) in the categories collection is the default active tab when the page loads. Controlled entirely from the admin panel — no `useEffect` or cascading setState involved.
+- **Smooth scrolling** — All anchor navigation (navbar links, footer quick links, scroll-to-top button, hero scroll arrow) uses a shared `smoothScrollTo()` utility in `lib/smoothScroll.js` with cubic easing. To adjust scroll speed change the `duration` default value in that file (current: `800ms`).
+- **Nav active highlight** — Uses `IntersectionObserver` with `rootMargin: "-20% 0px -85% 0px"` so the active link updates precisely as each section's heading enters the upper portion of the viewport — not when a section is merely peeking at the edge.
+- **Experience grid** — Uses `repeat(auto-fill, minmax(280px, 1fr))` so it collapses from 3 columns on desktop to 2 on medium screens and 1 on mobile, preventing card overflow.
+- **Skill/Project tab defaults** — The first tab (lowest `order` number) in the categories collection is the default active tab on page load. Controlled entirely from the admin panel.
 - **Modal centering** — Both `ExperienceModal` and the generic `Modal` use `createPortal` to render into `document.body`. This bypasses the CSS stacking context created by `SectionWrapper`'s `transform` animation, so modals always center correctly in the viewport.
 - **Social links multi-location** — A single social link can appear in multiple locations simultaneously by checking multiple boxes in the admin (Navbar, Hero, Footer, Contact Modal).
 - **Qualification fallback** — If the `qualifications` collection is empty, the section displays hardcoded BSc / HSC / SSC data so the page is never blank.
