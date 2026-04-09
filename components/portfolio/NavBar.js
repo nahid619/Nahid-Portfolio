@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useFetch } from "@/hooks/useFetch";
+import { smoothScrollTo } from "@/lib/smoothScroll";
 
 const NAV_LINKS = [
   { label: "Home",          href: "#home"          },
@@ -15,6 +16,15 @@ const NAV_LINKS = [
   { label: "Certifications",href: "#certification" },
   { label: "Contact",       href: "#contact"       },
 ];
+
+function handleNavClick(e, href) {
+  e.preventDefault();
+  const id = href.replace("#", "");
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 70;
+  smoothScrollTo(top, 800);
+}
 
 export default function NavBar() {
   const [scrolled, setScrolled]   = useState(false);
@@ -34,9 +44,13 @@ export default function NavBar() {
     const sections = document.querySelectorAll("section[id]");
 
     const observer = new IntersectionObserver(
-      entries => entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); }),
+      entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) setActive(e.target.id);
+        });
+      },
       {
-        rootMargin: "-40% 0px -55% 0px",
+        rootMargin: "-15% 0px -85% 0px",
         threshold: 0,
       }
     );
@@ -76,7 +90,7 @@ export default function NavBar() {
           <div className="nav-links-desktop" style={{ display:"flex", gap:"1.25rem", alignItems:"center" }}>
             {NAV_LINKS.map(link => {
               const id = link.href.replace("#", "");
-              return <a key={link.href} href={link.href} className={`nav-link ${activeSection === id ? "active" : ""}`}>{link.label}</a>;
+              return <a key={link.href} href={link.href} onClick={(e) => handleNavClick(e, link.href)} className={`nav-link ${activeSection === id ? "active" : ""}`}>{link.label}</a>;
             })}
           </div>
 
@@ -103,7 +117,7 @@ export default function NavBar() {
           {NAV_LINKS.map(link => {
             const id = link.href.replace("#", "");
             return (
-              <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className={`nav-link ${activeSection === id ? "active" : ""}`} style={{ fontSize:"1rem", padding:"10px 0", borderBottom:"1px solid rgba(13,45,94,0.5)", textAlign:"center", display:"block" }}>
+              <a key={link.href} href={link.href} onClick={(e) => { handleNavClick(e, link.href); setMenuOpen(false); }} className={`nav-link ${activeSection === id ? "active" : ""}`} style={{ fontSize:"1rem", padding:"10px 0", borderBottom:"1px solid rgba(13,45,94,0.5)", textAlign:"center", display:"block" }}>
                 {link.label}
               </a>
             );

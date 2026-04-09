@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useFetch } from "@/hooks/useFetch";
+import { smoothScrollTo } from "@/lib/smoothScroll";
 
 export default function HeroSection({ onContactClick }) {
   const [mounted, setMounted] = useState(false);
@@ -306,6 +307,11 @@ export default function HeroSection({ onContactClick }) {
             {/* Scroll down indicator */}
             <a
               href="#about"
+              onClick={(e) => {
+                e.preventDefault();
+                const el = document.getElementById("about");
+                if (el) smoothScrollTo(el.getBoundingClientRect().top + window.scrollY - 70, 800);
+              }}
               style={{
                 display: "flex",
                 flexDirection: "column",

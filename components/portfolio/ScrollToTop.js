@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { smoothScrollTo } from "@/lib/smoothScroll";
 
 export default function ScrollToTop() {
   const [visible, setVisible] = useState(false);
@@ -16,7 +17,7 @@ export default function ScrollToTop() {
 
   return (
     <button
-      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      onClick={() => smoothScrollTo(0, 800)}
       className="scroll-top-btn"
       aria-label="Scroll to top"
       title="Back to top"
@@ -25,3 +26,4 @@ export default function ScrollToTop() {
     </button>
   );
 }
+

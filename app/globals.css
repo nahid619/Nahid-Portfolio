@@ -188,10 +188,13 @@ input::placeholder, textarea::placeholder { color: #1e3050; }
 @media (max-width: 768px) {
   .exp-grid {
     grid-template-columns: 1fr !important;
+    width: 100% !important;
   }
   .exp-card {
-    min-width: unset !important;
+    min-width: 0 !important;
     width: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
   }
 }
 /* ── About CV button: auto-width on desktop, full-width on mobile ── */

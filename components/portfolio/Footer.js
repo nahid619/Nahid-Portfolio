@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useFetch } from "@/hooks/useFetch";
+import { smoothScrollTo } from "@/lib/smoothScroll";
 
 const QUICK_LINKS = [
   { label: "Home",          href: "#home"          },
@@ -13,6 +14,15 @@ const QUICK_LINKS = [
   { label: "Certifications",href: "#certification" },
   { label: "Contact",       href: "#contact"       },
 ];
+
+function handleNavClick(e, href) {
+  e.preventDefault();
+  const id = href.replace("#", "");
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 70;
+  smoothScrollTo(top, 800);
+}
 
 export default function Footer() {
   const { data: footerLinks } = useFetch("/api/social-links", { params: { location: "footer" } });
@@ -192,7 +202,7 @@ export default function Footer() {
                 <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
                   {QUICK_LINKS.map(link => (
                     <li key={link.href}>
-                      <a href={link.href} className="footer-nav-link">
+                      <a href={link.href} onClick={(e) => handleNavClick(e, link.href)} className="footer-nav-link">
                         {link.label}
                       </a>
                     </li>

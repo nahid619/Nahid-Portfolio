@@ -114,6 +114,8 @@ function ExperienceCard({ exp, onClick }) {
         borderRadius: "12px",
         padding: "18px 20px",
         cursor: "pointer",
+        minWidth: 0,
+        overflow: "hidden",
         textAlign: "left",
         transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
         // Use margin instead of transform to avoid going under sticky nav
@@ -147,7 +149,7 @@ function ExperienceCard({ exp, onClick }) {
           }
         </div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ color: "white", fontSize: "0.875rem", fontWeight: 700, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div style={{ color: "white", fontSize: "0.875rem", fontWeight: 700, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
             {exp.role}
           </div>
           <div style={{ color: "#06D001", fontSize: "0.8rem" }}>{exp.company}</div>
@@ -160,7 +162,7 @@ function ExperienceCard({ exp, onClick }) {
       </div>
 
       {/* Skill tags */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", overflow: "hidden" }}>
         {exp.skills?.slice(0, 4).map(s => <TechBadge key={s} label={s} />)}
         {exp.skills?.length > 4 && <TechBadge label={`+${exp.skills.length - 4}`} variant="outline" />}
       </div>
