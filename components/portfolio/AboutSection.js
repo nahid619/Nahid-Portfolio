@@ -1,39 +1,52 @@
 // components/portfolio/AboutSection.js
-"use client";
-
 import Image from "next/image";
-import { useFetch } from "@/hooks/useFetch";
-import { SectionWrapper, SectionHeader, SkeletonLoader } from "@/components/shared";
-import { formatExperienceForDisplay } from "@/lib/calculateExperience";
+import { SectionWrapper, SectionHeader } from "@/components/shared";
 
-export default function AboutSection() {
-  const { data: profile,     loading: profileLoading } = useFetch("/api/profile");
-  const { data: experiences }                          = useFetch("/api/experiences");
-  const { data: projects }                             = useFetch("/api/projects");
+// No "use client" — this is a server component
+// All data comes in as props from page.js
+// Hover effect on CV button handled via CSS class (no JS event handlers in server components)
 
-  const expText      = experiences ? formatExperienceForDisplay(experiences) : null;
-  const projectCount = projects   ? `${String(projects.length).padStart(2, "0")}+` : null;
-
+export default function AboutSection({ profile, expText, projectCount }) {
   return (
-    <SectionWrapper id="about">
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1.5rem" }}>
-        <SectionHeader title="Nahid Hasan" subtitle="My introduction" />
+    <>
+      <style>{`
+        .about-cv-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          justify-content: center;
+          background: linear-gradient(135deg, #059212, #06D001);
+          color: white;
+          padding: 10px 22px;
+          border-radius: 8px;
+          font-size: 0.875rem;
+          font-weight: 700;
+          text-decoration: none;
+          box-shadow: 0 4px 16px rgba(5,146,18,0.3);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .about-cv-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(5,146,18,0.4);
+        }
+      `}</style>
 
-        <div
-          className="about-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "auto 1fr",
-            gap: "clamp(1.5rem, 4vw, 3rem)",
-            alignItems: "start",
-            justifyItems: "center",
-          }}
-        >
-          {/* Photo */}
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            {profileLoading ? (
-              <SkeletonLoader variant="circle" width="160px" height="160px" />
-            ) : (
+      <SectionWrapper id="about">
+        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1.5rem" }}>
+          <SectionHeader title="Nahid Hasan" subtitle="My introduction" />
+
+          <div
+            className="about-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "auto 1fr",
+              gap: "clamp(1.5rem, 4vw, 3rem)",
+              alignItems: "start",
+              justifyItems: "center",
+            }}
+          >
+            {/* Photo */}
+            <div style={{ display: "flex", justifyContent: "center" }}>
               <div style={{
                 width: "clamp(110px, 14vw, 160px)",
                 height: "clamp(110px, 14vw, 160px)",
@@ -42,44 +55,56 @@ export default function AboutSection() {
                 border: "3px solid #059212",
                 boxShadow: "0 0 24px rgba(5,146,18,0.25)",
                 background: "#00193b",
-                display: "flex", alignItems: "center", justifyContent: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 flexShrink: 0,
                 position: "relative",
               }}>
                 {profile?.profileImageUrl ? (
-                  <Image src={profile.profileImageUrl} alt="Nahid Hasan" fill style={{ objectFit: "cover" }} sizes="160px" />
+                  <Image
+                    src={profile.profileImageUrl}
+                    alt="Nahid Hasan"
+                    fill
+                    style={{ objectFit: "cover" }}
+                    sizes="160px"
+                  />
                 ) : (
                   <span style={{ color: "#06D001", fontSize: "2.5rem", fontWeight: 700 }}>NH</span>
                 )}
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Text */}
-          <div>
-            {profileLoading ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "1.75rem" }}>
-                <SkeletonLoader variant="line" width="100%" />
-                <SkeletonLoader variant="line" width="90%" />
-                <SkeletonLoader variant="line" width="95%" />
-                <SkeletonLoader variant="line" width="80%" />
-              </div>
-            ) : (
-              <p style={{ color: "#bcc4ba", fontSize: "0.938rem", lineHeight: 1.85, marginBottom: "1.75rem", textAlign: "left" }} className="about-bio">
+            {/* Text */}
+            <div>
+              <p
+                className="about-bio"
+                style={{
+                  color: "#bcc4ba",
+                  fontSize: "0.938rem",
+                  lineHeight: 1.85,
+                  marginBottom: "1.75rem",
+                  textAlign: "left",
+                }}
+              >
                 {profile?.bio}
               </p>
-            )}
 
-            {/* Stats — Projects + Experience only (CGPA removed) */}
-            <div className="about-stats" style={{ display: "flex", gap: "clamp(1.5rem, 4vw, 3rem)", marginBottom: "1.75rem", flexWrap: "wrap" }}>
-              {[
-                { value: projectCount, label: "Projects\nCompleted", loading: !projectCount },
-                { value: expText,      label: "Experience",           loading: !expText, small: true },
-              ].map((stat, i) => (
-                <div key={i} style={{ textAlign: "center" }}>
-                  {stat.loading ? (
-                    <SkeletonLoader variant="line" width="60px" height="28px" style={{ marginBottom: "6px" }} />
-                  ) : (
+              {/* Stats */}
+              <div
+                className="about-stats"
+                style={{
+                  display: "flex",
+                  gap: "clamp(1.5rem, 4vw, 3rem)",
+                  marginBottom: "1.75rem",
+                  flexWrap: "wrap",
+                }}
+              >
+                {[
+                  { value: projectCount, label: "Projects\nCompleted" },
+                  { value: expText,      label: "Experience", small: true },
+                ].map((stat, i) => (
+                  <div key={i} style={{ textAlign: "center" }}>
                     <span style={{
                       display: "block",
                       color: "#06D001",
@@ -90,48 +115,50 @@ export default function AboutSection() {
                     }}>
                       {stat.value}
                     </span>
-                  )}
-                  <span style={{ display: "block", color: "#bcc4ba", fontSize: "0.75rem", whiteSpace: "pre-line", lineHeight: 1.4 }}>
-                    {stat.label}
-                  </span>
-                </div>
-              ))}
-            </div>
+                    <span style={{
+                      display: "block",
+                      color: "#bcc4ba",
+                      fontSize: "0.75rem",
+                      whiteSpace: "pre-line",
+                      lineHeight: 1.4,
+                    }}>
+                      {stat.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
 
-            {/* Download CV — proxied through /api/cv-download to avoid Cloudinary 401 */}
-            <div className="about-buttons" style={{ width: "100%" }}>
-              <a
-                href="/api/cv-download"
-                className="about-cv-btn"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  justifyContent: "center",
-                  background: "linear-gradient(135deg, #059212, #06D001)",
-                  color: "white",
-                  padding: "10px 22px",
-                  borderRadius: "8px",
-                  fontSize: "0.875rem",
-                  fontWeight: 700,
-                  textDecoration: "none",
-                  boxShadow: "0 4px 16px rgba(5,146,18,0.3)",
-                  transition: "transform 0.2s, box-shadow 0.2s",
-                  opacity: profile?.cvFileUrl ? 1 : 0.5,
-                  pointerEvents: profile?.cvFileUrl ? "auto" : "none",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(5,146,18,0.4)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(5,146,18,0.3)"; }}
-              >
-                Download CV
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-              </a>
+              {/* Download CV */}
+              <div className="about-buttons" style={{ width: "100%" }}>
+                <a
+                  href="/api/cv-download"
+                  className="about-cv-btn"
+                  style={{
+                    opacity: profile?.cvFileUrl ? 1 : 0.5,
+                    pointerEvents: profile?.cvFileUrl ? "auto" : "none",
+                  }}
+                >
+                  Download CV
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                </a>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </SectionWrapper>
+      </SectionWrapper>
+    </>
   );
 }

@@ -1,4 +1,7 @@
 // components/portfolio/ContactSection.js
+// "use client" needed — inputs use onFocus/onBlur, send button uses onMouseEnter/onMouseLeave
+"use client";
+
 import { SectionWrapper, SectionHeader } from "@/components/shared";
 
 const INFO_ITEMS = [
@@ -38,7 +41,7 @@ export default function ContactSection() {
         >
           {/* Left: contact info */}
           <div>
-            {INFO_ITEMS.map((item) => (
+            {INFO_ITEMS.map(item => (
               <div
                 key={item.title}
                 style={{
@@ -49,16 +52,14 @@ export default function ContactSection() {
                   textAlign: "left",
                 }}
               >
-                <div
-                  style={{
-                    width: "44px", height: "44px",
-                    background: "#00193b",
-                    border: "1px solid #02275b",
-                    borderRadius: "10px",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: "18px", flexShrink: 0,
-                  }}
-                >
+                <div style={{
+                  width: "44px", height: "44px",
+                  background: "#00193b",
+                  border: "1px solid #02275b",
+                  borderRadius: "10px",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "18px", flexShrink: 0,
+                }}>
                   {item.icon}
                 </div>
                 <div style={{ textAlign: "left" }}>
@@ -85,20 +86,23 @@ export default function ContactSection() {
           </div>
 
           {/* Right: message form */}
-          <div
-            style={{
-              background: "#00193b",
-              border: "1px solid #02275b",
-              borderRadius: "12px",
-              padding: "1.5rem",
-            }}
-          >
+          <div style={{
+            background: "#00193b",
+            border: "1px solid #02275b",
+            borderRadius: "12px",
+            padding: "1.5rem",
+          }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
-              <FormField label="Name" type="text" placeholder="Your name" />
+              <FormField label="Name"  type="text"  placeholder="Your name" />
               <FormField label="Email" type="email" placeholder="your@email.com" />
             </div>
+
             <div style={{ marginBottom: "12px" }}>
-              <label style={{ color: "#9BEC00", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "6px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+              <label style={{
+                color: "#9BEC00", fontSize: "0.75rem", fontWeight: 600,
+                display: "block", marginBottom: "6px",
+                letterSpacing: "0.05em", textTransform: "uppercase",
+              }}>
                 Message
               </label>
               <textarea
@@ -117,10 +121,11 @@ export default function ContactSection() {
                   outline: "none",
                   transition: "border-color 0.2s",
                 }}
-                onFocus={(e) => (e.target.style.borderColor = "#059212")}
-                onBlur={(e) => (e.target.style.borderColor = "#02275b")}
+                onFocus={e  => (e.target.style.borderColor = "#059212")}
+                onBlur={e   => (e.target.style.borderColor = "#02275b")}
               />
             </div>
+
             <a
               href="mailto:nahidhasan00619@gmail.com?subject=Hello Nahid&body=Write your message here..."
               style={{
@@ -139,12 +144,13 @@ export default function ContactSection() {
                 boxShadow: "0 4px 16px rgba(5,146,18,0.3)",
                 transition: "transform 0.2s",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+              onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
+              onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}
             >
               Send Message
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
               </svg>
             </a>
           </div>
@@ -157,7 +163,11 @@ export default function ContactSection() {
 function FormField({ label, type, placeholder }) {
   return (
     <div>
-      <label style={{ color: "#9BEC00", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "6px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+      <label style={{
+        color: "#9BEC00", fontSize: "0.75rem", fontWeight: 600,
+        display: "block", marginBottom: "6px",
+        letterSpacing: "0.05em", textTransform: "uppercase",
+      }}>
         {label}
       </label>
       <input
@@ -175,8 +185,8 @@ function FormField({ label, type, placeholder }) {
           outline: "none",
           transition: "border-color 0.2s",
         }}
-        onFocus={(e) => (e.target.style.borderColor = "#059212")}
-        onBlur={(e) => (e.target.style.borderColor = "#02275b")}
+        onFocus={e => (e.target.style.borderColor = "#059212")}
+        onBlur={e  => (e.target.style.borderColor = "#02275b")}
       />
     </div>
   );

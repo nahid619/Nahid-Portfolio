@@ -24,10 +24,7 @@ function handleNavClick(e, href) {
   smoothScrollTo(top, 800);
 }
 
-export default function Footer() {
-  const { data: footerLinks } = useFetch("/api/social-links", { params: { location: "footer" } });
-  // Same source as HeroSection — keeps role in sync
-  const { data: profile }     = useFetch("/api/profile");
+export default function Footer({ profile, footerLinks = [] }) {
 
   // Animate in when footer enters viewport
   const [visible, setVisible] = useState(false);

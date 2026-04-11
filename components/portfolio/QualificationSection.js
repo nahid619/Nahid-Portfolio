@@ -1,10 +1,6 @@
 // components/portfolio/QualificationSection.js
-"use client";
-
-import { useFetch } from "@/hooks/useFetch";
 import { SectionWrapper, SectionHeader } from "@/components/shared";
 
-// Fallback data — used if DB has no qualifications yet
 const FALLBACK = [
   {
     _id: "1",
@@ -58,8 +54,6 @@ function QualCard({ item }) {
         transition: "border-color 0.2s",
       }}
       className={`qual-card ${isLeft ? "qual-card-left" : "qual-card-right"}`}
-      onMouseEnter={e => e.currentTarget.style.borderColor = "#059212"}
-      onMouseLeave={e => e.currentTarget.style.borderColor = "#02275b"}
     >
       <div style={{ color: "white", fontSize: "0.938rem", fontWeight: 700, marginBottom: "3px" }}>{item.title}</div>
       {item.subtitle && <div style={{ color: "#06D001", fontSize: "0.813rem", marginBottom: "2px" }}>{item.subtitle}</div>}
@@ -80,11 +74,10 @@ function QualCard({ item }) {
   );
 }
 
-export default function QualificationSection() {
-  const { data: dbQuals, loading } = useFetch("/api/qualifications");
-
-  // Use DB data if available, otherwise fall back to hardcoded
-  const qualifications = (dbQuals && dbQuals.length > 0) ? dbQuals : FALLBACK;
+// No "use client" — server component
+// qualifications prop comes from page.js
+export default function QualificationSection({ qualifications }) {
+  const items = qualifications?.length > 0 ? qualifications : FALLBACK;
 
   return (
     <SectionWrapper id="qualification">
@@ -92,7 +85,7 @@ export default function QualificationSection() {
         <SectionHeader title="Qualification" subtitle="My personal journey" />
 
         <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-          {qualifications.map((item, i) => (
+          {items.map((item, i) => (
             <div
               key={item._id}
               className="qual-grid"
@@ -103,12 +96,10 @@ export default function QualificationSection() {
                 alignItems: "stretch",
               }}
             >
-              {/* Left slot */}
               <div className="qual-left-slot">
                 {item.side === "left" ? <QualCard item={item} /> : null}
               </div>
 
-              {/* Center timeline dot + line */}
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "14px" }}>
                 <div style={{
                   width: "14px", height: "14px",
@@ -118,12 +109,11 @@ export default function QualificationSection() {
                   boxShadow: "0 0 8px rgba(5,146,18,0.5)",
                   flexShrink: 0, zIndex: 1,
                 }} />
-                {i < qualifications.length - 1 && (
+                {i < items.length - 1 && (
                   <div style={{ flex: 1, width: "2px", background: "linear-gradient(to bottom, #059212, #02275b)", margin: "4px 0" }} />
                 )}
               </div>
 
-              {/* Right slot */}
               <div className="qual-right-slot">
                 {item.side === "right" ? <QualCard item={item} /> : null}
               </div>

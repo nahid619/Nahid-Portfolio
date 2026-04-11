@@ -5,10 +5,8 @@ import Image from "next/image";
 import { useFetch } from "@/hooks/useFetch";
 import { Modal } from "@/components/shared";
 
-export default function ContactModal({ isOpen, onClose }) {
+export default function ContactModal({ isOpen, onClose, contactLinks = [] }) {
   // Only links with "contact-modal" in their showIn array
-  const { data: contactLinks } = useFetch("/api/social-links", { params: { location: "contact-modal" } });
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="320px">
       <h2 style={{ color:"white", fontSize:"1.1rem", fontWeight:700, margin:"0 0 4px" }}>Get in touch</h2>
