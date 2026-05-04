@@ -1,6 +1,8 @@
 // app/experiences/page.js
 // Server component — fetches experiences server-side
 // Passes data down to AllExperiencesClient which handles modal/interactivity
+// Force dynamic so newly added experiences appear immediately on every load.
+export const dynamic = "force-dynamic";
 
 import { getExperiences, getSocialLinks } from "@/lib/data";
 import NavBar from "@/components/portfolio/NavBar";
