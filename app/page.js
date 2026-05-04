@@ -1,4 +1,9 @@
 // app/page.js
+// Force dynamic rendering — ensures MongoDB data is always fresh on every
+// request. Without this, Next.js statically caches the page and newly added
+// skills / projects / certs / experiences won't appear until a server restart.
+export const dynamic = "force-dynamic";
+
 import { getHomePageData } from "@/lib/data";
 import { formatExperienceForDisplay } from "@/lib/calculateExperience";
 
