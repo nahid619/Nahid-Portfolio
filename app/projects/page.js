@@ -1,6 +1,8 @@
 // app/projects/page.js
 // Server component — fetches all projects + categories server-side
 // Passes data down to AllProjectsClient which handles tabs/modal/interactivity
+// Force dynamic so newly added projects appear immediately on every load.
+export const dynamic = "force-dynamic";
 
 import { getProjects, getCategories } from "@/lib/data";
 import NavBar from "@/components/portfolio/NavBar";
