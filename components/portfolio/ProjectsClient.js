@@ -1,122 +1,120 @@
-// components/portfolio/ProjectsClient.js
-// Phase 4 — NEW FILE
-//
-// Why this exists:
-// ProjectsSection is now a server component.
-// But tab switching needs useState + fetch on tab change,
-// and project cards need onClick to open the modal.
-// All interactive logic lives here.
-//
-// On first render: uses initialProjects (server-fetched, zero extra request)
-// On tab switch: fetches from /api/projects?category=xxx
-
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { TabGroup, TechBadge, SkeletonCard } from "@/components/shared";
+import { TabGroup, TechBadge } from "@/components/shared";
 import ProjectModal from "./ProjectModal";
 
 export default function ProjectsClient({
-  tabs            = [],
-  initialProjects = [],
-  firstProjectTab = "",
-  totalCount      = 0,
+  tabs = [], initialProjects = [], firstProjectTab = "", totalCount = 0,
 }) {
-  const [activeTab,        setActiveTab]       = useState(firstProjectTab);
-  const [projects,         setProjects]        = useState(initialProjects);
-  const [loading,          setLoading]         = useState(false);
-  const [selectedProject,  setSelected]        = useState(null);
+  const [activeTab,       setActiveTab] = useState(firstProjectTab);
+  const [projects,        setProjects]  = useState(initialProjects);
+  const [animKey,         setAnimKey]   = useState(0);
+  const [selectedProject, setSelected] = useState(null);
+  const fetchingRef = useRef(false);
 
   async function handleTabChange(value) {
-    if (value === activeTab) return;
+    if (value === activeTab || fetchingRef.current) return;
+    fetchingRef.current = true;
     setActiveTab(value);
-    setLoading(true);
     try {
-      const url = value
-        ? `/api/projects?category=${encodeURIComponent(value)}`
-        : "/api/projects";
+      const url = value ? `/api/projects?category=${encodeURIComponent(value)}` : "/api/projects";
       const res  = await fetch(url);
       const data = await res.json();
       setProjects(data);
+      setAnimKey(k => k + 1);
     } catch (err) {
       console.error("Projects fetch error:", err);
     } finally {
-      setLoading(false);
+      fetchingRef.current = false;
     }
   }
 
-  // Show max 3 cards + "See All" card in 4th slot
   const visible = projects.slice(0, 3);
 
   return (
     <>
-      <TabGroup
-        tabs={tabs}
-        active={activeTab}
-        onChange={handleTabChange}
-      />
+      <TabGroup tabs={tabs} active={activeTab} onChange={handleTabChange} />
 
-      <div
-        className="projects-grid"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-          gap: "16px",
-        }}
-      >
-        {loading
-          ? Array.from({ length: 4 }).map((_, i) => (
-              <SkeletonCard key={i} />
-            ))
-          : (
-            <>
-              {visible.map(project => (
-                <ProjectCard
-                  key={project._id}
-                  project={project}
-                  onClick={() => setSelected(project)}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+        gap: "16px",
+      }}>
+        {visible.map((project, i) => (
+          <div
+            key={`${animKey}-${project._id}`}
+            className="project-card"
+            style={{ animationDelay: `${i * 120}ms` }}
+            onClick={() => setSelected(project)}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform   = "translateY(-5px)";
+              e.currentTarget.style.boxShadow   = "0 10px 32px rgba(5,146,18,0.2)";
+              e.currentTarget.style.borderColor  = "#059212";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform   = "translateY(0)";
+              e.currentTarget.style.boxShadow   = "none";
+              e.currentTarget.style.borderColor  = "#02275b";
+            }}
+          >
+            <div style={{
+              height: "140px",
+              background: "linear-gradient(135deg, #021f40, #059212 120%)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              overflow: "hidden", position: "relative",
+            }}>
+              {project.projectImageUrl ? (
+                <Image
+                  src={project.projectImageUrl} alt={project.title}
+                  fill style={{ objectFit: "cover" }}
+                  sizes="(max-width: 600px) 100vw, 300px"
                 />
-              ))}
+              ) : (
+                <span style={{ color: "#9BEC00", fontSize: "0.813rem", fontWeight: 600, padding: "0 12px", textAlign: "center" }}>
+                  {project.title}
+                </span>
+              )}
+            </div>
+            <div style={{ padding: "12px 14px" }}>
+              <h3 style={{ color: "white", fontSize: "0.938rem", fontWeight: 700, margin: "0 0 8px" }}>
+                {project.title}
+              </h3>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                {project.techStack?.slice(0, 4).map(t => <TechBadge key={t} label={t} />)}
+              </div>
+            </div>
+          </div>
+        ))}
 
-              {/* See All card — always 4th slot */}
-              <Link
-                href="/projects"
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
-                  background: "#00193b",
-                  border: "2px dashed #059212",
-                  borderRadius: "10px",
-                  minHeight: "180px",
-                  textDecoration: "none",
-                  width: "100%",
-                  transition: "background 0.2s, border-color 0.2s",
-                  cursor: "pointer",
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background  = "#021f40";
-                  e.currentTarget.style.borderColor = "#06D001";
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background  = "#00193b";
-                  e.currentTarget.style.borderColor = "#059212";
-                }}
-              >
-                <span style={{ fontSize: "2rem", color: "#06D001" }}>→</span>
-                <span style={{ color: "#06D001", fontSize: "0.938rem", fontWeight: 700 }}>
-                  See All Projects
-                </span>
-                <span style={{ color: "#bcc4ba", fontSize: "0.75rem" }}>
-                  View all {totalCount} projects
-                </span>
-              </Link>
-            </>
-          )}
+        {/* See All card */}
+        <div
+          key={`${animKey}-see-all`}
+          className="project-card see-all-card"
+          style={{ animationDelay: `${visible.length * 100}ms`, minHeight: "180px" }}
+          onMouseEnter={e => {
+            e.currentTarget.style.transform   = "translateY(-5px)";
+            e.currentTarget.style.background  = "#021f40";
+            e.currentTarget.style.borderColor = "#06D001";
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform   = "translateY(0)";
+            e.currentTarget.style.background  = "#00193b";
+            e.currentTarget.style.borderColor = "#059212";
+          }}
+        >
+          <Link href="/projects" style={{
+            display: "flex", flexDirection: "column", alignItems: "center",
+            justifyContent: "center", gap: "8px", width: "100%", height: "100%",
+            textDecoration: "none", padding: "24px",
+          }}>
+            <span style={{ fontSize: "2rem", color: "#06D001" }}>→</span>
+            <span style={{ color: "#06D001", fontSize: "0.938rem", fontWeight: 700 }}>See All Projects</span>
+            <span style={{ color: "#bcc4ba", fontSize: "0.75rem" }}>View all {totalCount} projects</span>
+          </Link>
+        </div>
       </div>
 
       <ProjectModal
@@ -126,85 +124,27 @@ export default function ProjectsClient({
       />
 
       <style>{`
-        @keyframes skeletonShimmer {
-          0%   { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
+        .project-card {
+          background: #00193b;
+          border: 1px solid #02275b;
+          border-radius: 10px;
+          overflow: hidden;
+          cursor: pointer;
+          opacity: 0;
+          animation: cardIn 0.55s ease forwards;
+          transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+        }
+        .see-all-card {
+          border: 2px dashed #059212;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        @keyframes cardIn {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0);    }
         }
       `}</style>
     </>
-  );
-}
-
-function ProjectCard({ project, onClick }) {
-  return (
-    <div
-      onClick={onClick}
-      style={{
-        background: "#00193b",
-        border: "1px solid #02275b",
-        borderRadius: "10px",
-        overflow: "hidden",
-        cursor: "pointer",
-        transition: "transform 0.2s, box-shadow 0.2s, border-color 0.2s",
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.transform    = "translateY(-4px)";
-        e.currentTarget.style.boxShadow    = "0 8px 28px rgba(5,146,18,0.18)";
-        e.currentTarget.style.borderColor  = "#059212";
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.transform    = "translateY(0)";
-        e.currentTarget.style.boxShadow    = "none";
-        e.currentTarget.style.borderColor  = "#02275b";
-      }}
-    >
-      {/* Image */}
-      <div style={{
-        height: "140px",
-        background: "linear-gradient(135deg, #021f40, #059212 120%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        overflow: "hidden",
-        position: "relative",
-      }}>
-        {project.projectImageUrl ? (
-          <Image
-            src={project.projectImageUrl}
-            alt={project.title}
-            fill
-            style={{ objectFit: "cover" }}
-            sizes="(max-width: 600px) 100vw, 300px"
-          />
-        ) : (
-          <span style={{
-            color: "#9BEC00",
-            fontSize: "0.813rem",
-            fontWeight: 600,
-            padding: "0 12px",
-            textAlign: "center",
-          }}>
-            {project.title}
-          </span>
-        )}
-      </div>
-
-      {/* Body */}
-      <div style={{ padding: "12px 14px" }}>
-        <h3 style={{
-          color: "white",
-          fontSize: "0.938rem",
-          fontWeight: 700,
-          margin: "0 0 8px",
-        }}>
-          {project.title}
-        </h3>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-          {project.techStack?.slice(0, 4).map(t => (
-            <TechBadge key={t} label={t} />
-          ))}
-        </div>
-      </div>
-    </div>
   );
 }
