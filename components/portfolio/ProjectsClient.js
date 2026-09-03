@@ -1,63 +1,63 @@
+// components/portfolio/ProjectsClient.js
 "use client";
 
-import { useState, useRef } from "react";
+// BUG FIX — same stale-tab-content problem as SkillsClient.
+//
+// The old version fetched /api/projects?category=xxx on every tab click
+// while the grid kept showing the previous category, and dropped clicks
+// that arrived mid-flight via `fetchingRef`.
+//
+// page.js was ALREADY loading every project server-side (it needs the full
+// list for the "+N" count in the About section), so the fetch was asking
+// the server for data the browser already had. Now we filter in memory.
+
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { TabGroup, TechBadge } from "@/components/shared";
 import ProjectModal from "./ProjectModal";
 
 export default function ProjectsClient({
-  tabs = [], initialProjects = [], firstProjectTab = "", totalCount = 0,
+  tabs            = [],
+  projects        = [],   // ALL projects, from the server
+  firstProjectTab = "",
+  totalCount      = 0,
 }) {
   const [activeTab,       setActiveTab] = useState(firstProjectTab);
-  const [projects,        setProjects]  = useState(initialProjects);
-  const [animKey,         setAnimKey]   = useState(0);
-  const [selectedProject, setSelected] = useState(null);
-  const fetchingRef = useRef(false);
+  const [selectedProject, setSelected ] = useState(null);
 
-  async function handleTabChange(value) {
-    if (value === activeTab || fetchingRef.current) return;
-    fetchingRef.current = true;
-    setActiveTab(value);
-    try {
-      const url = value ? `/api/projects?category=${encodeURIComponent(value)}` : "/api/projects";
-      const res  = await fetch(url);
-      const data = await res.json();
-      setProjects(data);
-      setAnimKey(k => k + 1);
-    } catch (err) {
-      console.error("Projects fetch error:", err);
-    } finally {
-      fetchingRef.current = false;
-    }
-  }
-
-  const visible = projects.slice(0, 3);
+  // Empty tab value means "All". Only 3 are previewed on the homepage.
+  const visible = useMemo(() => {
+    const filtered = activeTab
+      ? projects.filter(p => p.category === activeTab)
+      : projects;
+    return filtered.slice(0, 3);
+  }, [projects, activeTab]);
 
   return (
     <>
-      <TabGroup tabs={tabs} active={activeTab} onChange={handleTabChange} />
+      <TabGroup tabs={tabs} active={activeTab} onChange={setActiveTab} />
 
-      <div style={{
+      <div className="projects-grid" style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
         gap: "16px",
       }}>
         {visible.map((project, i) => (
           <div
-            key={`${animKey}-${project._id}`}
+            key={`${activeTab}-${project._id}`}
             className="project-card"
             style={{ animationDelay: `${i * 120}ms` }}
             onClick={() => setSelected(project)}
             onMouseEnter={e => {
               e.currentTarget.style.transform   = "translateY(-5px)";
               e.currentTarget.style.boxShadow   = "0 10px 32px rgba(5,146,18,0.2)";
-              e.currentTarget.style.borderColor  = "#059212";
+              e.currentTarget.style.borderColor = "#059212";
             }}
             onMouseLeave={e => {
               e.currentTarget.style.transform   = "translateY(0)";
               e.currentTarget.style.boxShadow   = "none";
-              e.currentTarget.style.borderColor  = "#02275b";
+              e.currentTarget.style.borderColor = "#02275b";
             }}
           >
             <div style={{
@@ -89,9 +89,20 @@ export default function ProjectsClient({
           </div>
         ))}
 
+        {/* Empty-category message — previously you'd just get a lone
+            "See All" card with no explanation. */}
+        {visible.length === 0 && (
+          <div style={{
+            gridColumn: "1 / -1", textAlign: "center",
+            padding: "2rem 0", color: "#bcc4ba", fontSize: "0.875rem",
+          }}>
+            No projects in this category yet.
+          </div>
+        )}
+
         {/* See All card */}
         <div
-          key={`${animKey}-see-all`}
+          key={`${activeTab}-see-all`}
           className="project-card see-all-card"
           style={{ animationDelay: `${visible.length * 100}ms`, minHeight: "180px" }}
           onMouseEnter={e => {

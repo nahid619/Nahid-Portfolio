@@ -52,7 +52,7 @@ export default async function Home() {
 
       <SkillsSection
         skillCategories={data.skillCategories}
-        initialSkills={data.initialSkills}
+        skills={data.skills}
         firstSkillTab={data.firstSkillTab}
       />
 
@@ -62,7 +62,7 @@ export default async function Home() {
 
       <ProjectsSection
         projectCategories={data.projectCategories}
-        initialProjects={data.initialProjects}
+        projects={data.projects}
         firstProjectTab={data.firstProjectTab}
         totalCount={data.projects?.length}
       />

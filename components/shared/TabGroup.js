@@ -9,10 +9,19 @@
  *   tabs      — array of { label: string, value: string }
  *   active    — currently active tab value
  *   onChange  — (value: string) => void
+ *
+ * Note: className="tab-group" is required — globals.css hangs the mobile
+ * horizontal-scroll rules off it (`@media (max-width: 768px) .tab-group`).
+ * That block existed but was dead code because this component previously
+ * used inline styles only, so the tabs wrapped onto two rows on phones.
+ * The stylesheet rules use !important, so they win over the inline
+ * flexWrap below.
  */
 export default function TabGroup({ tabs = [], active, onChange }) {
   return (
     <div
+      className="tab-group"
+      role="tablist"
       style={{
         display: "flex",
         flexWrap: "wrap",
@@ -26,6 +35,9 @@ export default function TabGroup({ tabs = [], active, onChange }) {
         return (
           <button
             key={tab.value}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
             onClick={() => onChange(tab.value)}
             style={{
               padding: "6px 18px",

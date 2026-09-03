@@ -1,35 +1,48 @@
+// components/portfolio/SkillsClient.js
 "use client";
 
-import { useState, useRef } from "react";
+// BUG FIX — "clicked Salesforce but still see every skill"
+//
+// What was wrong:
+//   handleTabChange called setActiveTab(value) synchronously, then awaited
+//   fetch("/api/skills?category=..."). The tab underline moved instantly,
+//   but the grid kept rendering the PREVIOUS category's skills until the
+//   request resolved. With force-dynamic routes + a cold MongoDB Atlas
+//   connection that gap is regularly 2-5s, so the UI showed stale data as
+//   if it were the answer.
+//
+//   Worse, `if (... || fetchingRef.current) return;` meant any tab clicked
+//   while a request was in flight was silently DISCARDED — the highlight
+//   didn't even move. That's the "feels stuck" symptom.
+//
+// The fix:
+//   Don't fetch at all. lib/data.js already loads every skill server-side
+//   and ships it with the page HTML, so filtering happens in memory.
+//   Tab switching is now instant, there is no loading state to get stuck
+//   in, and the race condition is structurally impossible.
+//
+//   /api/skills still exists — the admin panel uses it.
+
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import { TabGroup } from "@/components/shared";
 
-export default function SkillsClient({ tabs = [], initialSkills = [], firstSkillTab = "" }) {
+export default function SkillsClient({
+  tabs          = [],
+  skills        = [],   // ALL skills, from the server
+  firstSkillTab = "",
+}) {
   const [activeTab, setActiveTab] = useState(firstSkillTab);
-  const [skills,    setSkills]    = useState(initialSkills);
-  const [animKey,   setAnimKey]   = useState(0);
-  const fetchingRef = useRef(false);
 
-  async function handleTabChange(value) {
-    if (value === activeTab || fetchingRef.current) return;
-    fetchingRef.current = true;
-    setActiveTab(value);
-    try {
-      const url = value ? `/api/skills?category=${encodeURIComponent(value)}` : "/api/skills";
-      const res  = await fetch(url);
-      const data = await res.json();
-      setSkills(data);
-      setAnimKey(k => k + 1); // re-trigger CSS animation on new items
-    } catch (err) {
-      console.error("Skills fetch error:", err);
-    } finally {
-      fetchingRef.current = false;
-    }
-  }
+  // An empty tab value means "All".
+  const visible = useMemo(
+    () => (activeTab ? skills.filter(s => s.category === activeTab) : skills),
+    [skills, activeTab]
+  );
 
   return (
     <>
-      <TabGroup tabs={tabs} active={activeTab} onChange={handleTabChange} />
+      <TabGroup tabs={tabs} active={activeTab} onChange={setActiveTab} />
 
       <div
         style={{
@@ -38,19 +51,31 @@ export default function SkillsClient({ tabs = [], initialSkills = [], firstSkill
           gap: "10px",
         }}
       >
-        {skills.map((skill, i) => (
+        {visible.length === 0 ? (
+          <div style={{
+            gridColumn: "1 / -1", textAlign: "center",
+            padding: "2.5rem 0", color: "#bcc4ba", fontSize: "0.875rem",
+          }}>
+            No skills listed in this category yet.
+          </div>
+        ) : visible.map((skill, i) => (
           <div
-            key={`${animKey}-${skill._id}`}
+            /*
+              Keying on activeTab replaces the old animKey counter: changing
+              tab changes every key, so React remounts the cards and the
+              cardIn animation replays. One less piece of state.
+            */
+            key={`${activeTab}-${skill._id}`}
             className="skill-card"
             style={{ animationDelay: `${i * 70}ms` }}
             onMouseEnter={e => {
-              e.currentTarget.style.transform  = "translateY(-3px)";
-              e.currentTarget.style.boxShadow  = "0 6px 20px rgba(5,146,18,0.18)";
+              e.currentTarget.style.transform   = "translateY(-3px)";
+              e.currentTarget.style.boxShadow   = "0 6px 20px rgba(5,146,18,0.18)";
               e.currentTarget.style.borderColor = "#06D001";
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.transform  = "translateY(0)";
-              e.currentTarget.style.boxShadow  = "none";
+              e.currentTarget.style.transform   = "translateY(0)";
+              e.currentTarget.style.boxShadow   = "none";
               e.currentTarget.style.borderColor = "#059212";
             }}
           >

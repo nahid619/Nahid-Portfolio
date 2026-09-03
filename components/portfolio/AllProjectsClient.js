@@ -1,14 +1,23 @@
 // components/portfolio/AllProjectsClient.js
-// "use client" — handles tab switching, modal open/close, hover effects
-// Receives initialProjects + categories as props from the server page
-// On tab change fetches from /api/projects?category=xxx
-
 "use client";
 
-import { useState } from "react";
+// BUG FIX — this page had a subtler version of the tab bug.
+//
+//   1. It DID show skeletons while loading, but had no race guard at all.
+//      Two quick tab clicks could resolve out of order and leave the wrong
+//      category's projects sitting permanently under the wrong active tab.
+//      Unlike the homepage version, nothing corrected that afterwards.
+//   2. The header read `${projects?.length} projects total` off stale state,
+//      so during a load you'd see the OLD count printed above six skeletons.
+//
+// app/projects/page.js already calls getProjects() with no filter, so all
+// projects are in the browser on first paint. Filtering in memory removes
+// the fetch, the skeletons, the race and the stale count in one go.
+
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { SectionHeader, TabGroup, TechBadge, SkeletonCard } from "@/components/shared";
+import { SectionHeader, TabGroup, TechBadge } from "@/components/shared";
 import ProjectModal from "@/components/portfolio/ProjectModal";
 
 export default function AllProjectsClient({ initialProjects = [], categories = [] }) {
@@ -20,28 +29,15 @@ export default function AllProjectsClient({ initialProjects = [], categories = [
       .map(c => ({ label: c.name, value: c.value })),
   ];
 
-  const [activeTab,       setActiveTab]  = useState("");
-  const [projects,        setProjects]   = useState(initialProjects);
-  const [loading,         setLoading]    = useState(false);
-  const [selectedProject, setSelected]  = useState(null);
+  const [activeTab,       setActiveTab] = useState("");
+  const [selectedProject, setSelected ] = useState(null);
 
-  async function handleTabChange(value) {
-    if (value === activeTab) return;
-    setActiveTab(value);
-    setLoading(true);
-    try {
-      const url = value
-        ? `/api/projects?category=${encodeURIComponent(value)}`
-        : "/api/projects";
-      const res  = await fetch(url);
-      const data = await res.json();
-      setProjects(data);
-    } catch (err) {
-      console.error("Projects fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const visible = useMemo(
+    () => (activeTab
+      ? initialProjects.filter(p => p.category === activeTab)
+      : initialProjects),
+    [initialProjects, activeTab]
+  );
 
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem 1rem 4rem" }}>
@@ -65,13 +61,21 @@ export default function AllProjectsClient({ initialProjects = [], categories = [
         Back to Portfolio
       </Link>
 
+      {/*
+        Subtitle now reflects the ACTIVE filter rather than a stale array,
+        and reads correctly for both the "All" and filtered cases.
+      */}
       <SectionHeader
         title="All Projects"
-        subtitle={`${projects?.length ?? "..."} projects total`}
+        subtitle={
+          activeTab
+            ? `${visible.length} of ${initialProjects.length} projects`
+            : `${initialProjects.length} projects total`
+        }
         align="left"
       />
 
-      <TabGroup tabs={tabs} active={activeTab} onChange={handleTabChange} />
+      <TabGroup tabs={tabs} active={activeTab} onChange={setActiveTab} />
 
       {/* Projects grid */}
       <div
@@ -82,27 +86,22 @@ export default function AllProjectsClient({ initialProjects = [], categories = [
           gap: "20px",
         }}
       >
-        {loading
-          ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
-          : projects?.length === 0
-          ? (
-            <div style={{
-              gridColumn: "1 / -1", textAlign: "center",
-              padding: "4rem 0", color: "#bcc4ba",
-            }}>
-              <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📁</div>
-              <p style={{ fontSize: "1rem" }}>No projects found in this category.</p>
-            </div>
-          )
-          : projects?.map((project, i) => (
-              <ProjectCard
-                key={project._id}
-                project={project}
-                index={i}
-                onClick={() => setSelected(project)}
-              />
-            ))
-        }
+        {visible.length === 0 ? (
+          <div style={{
+            gridColumn: "1 / -1", textAlign: "center",
+            padding: "4rem 0", color: "#bcc4ba",
+          }}>
+            <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📁</div>
+            <p style={{ fontSize: "1rem" }}>No projects found in this category.</p>
+          </div>
+        ) : visible.map((project, i) => (
+          <ProjectCard
+            key={`${activeTab}-${project._id}`}
+            project={project}
+            index={i}
+            onClick={() => setSelected(project)}
+          />
+        ))}
       </div>
 
       <ProjectModal
