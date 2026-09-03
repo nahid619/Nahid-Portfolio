@@ -69,6 +69,49 @@ export default function NavBar({ navLinks = [] }) {
     return () => observer.disconnect();
   }, []);
 
+  // BUG FIX — cross-route hash links (e.g. "Back to Portfolio" from
+  // /projects, which links to "/#portfolio") always landed at the top of
+  // the page instead of the target section.
+  //
+  // Cause: app/loading.js gives "/" its own Suspense fallback. Next.js's
+  // router only attempts the built-in "scroll to #id" once, at the moment
+  // the route transition resolves — and with a loading.js present, that
+  // first resolution is the RouteLoader spinner screen, which has no
+  // id="portfolio" element on it. The attempt finds nothing, silently
+  // gives up, and never retries once the real page (which does have that
+  // id) streams in afterwards.
+  //
+  // Fix: NavBar only mounts once the REAL homepage content is in the DOM
+  // (it's rendered by page.js, not by loading.js), so on mount we just
+  // finish the job ourselves — read the hash and jump to it with the same
+  // 70px header offset every other nav link uses.
+  //
+  // rAF (not a bare mount-time read) gives layout one frame to settle
+  // first, so the measured position is accurate.
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash) return;
+
+    const id = hash.replace("#", "");
+
+    const raf = requestAnimationFrame(() => {
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      const top = el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
+
+      // Reuse the same guard as handleNavClick so the IntersectionObserver
+      // above doesn't fight this jump and flash the wrong link active.
+      scrollingRef.current = true;
+      setActive(id);
+      window.scrollTo(0, Math.max(0, top));
+      setTimeout(() => { scrollingRef.current = false; }, 50);
+    });
+
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <>
       <style>{`
