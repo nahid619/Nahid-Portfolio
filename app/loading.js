@@ -1,88 +1,149 @@
 // app/loading.js
 //
-// Loading fallback for the HOME route — this is the "Back to Portfolio"
-// direction. The homepage is force-dynamic and getHomePageData() runs a
-// dozen Mongo queries, so navigating back from /projects had the same
-// dead-click problem as going forward.
+// Loading fallback for the HOME route. Covers two cases:
+//   1. The very first visit, before any HTML has been rendered.
+//   2. Navigating back home (e.g. "Back to Portfolio" from /projects).
 //
-// This also covers the very first visit: instead of a blank white screen
-// while the server renders, visitors get an immediate branded shell.
+// Why a spinner and not a skeleton:
+// Skeletons work when the placeholder resembles what replaces it — the
+// /projects grid is a predictable set of equal cards, so a skeleton there
+// reads as "cards are coming". The landing page is a hero with mixed
+// typography, buttons and a portrait; a skeleton of it is just a few grey
+// slabs that look like a layout failure rather than a load in progress.
+// A centred, branded spinner communicates "the site is starting" clearly.
 //
-// If you'd rather the homepage never show a skeleton, delete this file —
-// the /projects and /experiences fallbacks are independent of it.
+// Still a Server Component with zero client JS and no imports, so it ships
+// as static HTML inside the route prefetch and can never itself be slow.
+// All animation is pure CSS.
 
 export default function Loading() {
   return (
-    <main style={{ background: "#011428", minHeight: "100vh" }}>
+    <main className="hm-wrap">
       <style>{`
-        @keyframes hmShimmer {
-          0%   { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
+        .hm-wrap {
+          background: #011428;
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1.5rem;
         }
-        @keyframes hmPulse {
-          0%, 100% { opacity: 0.45; }
-          50%      { opacity: 1;    }
+        /* dvh avoids the mobile browser-chrome jump where supported */
+        @supports (min-height: 100dvh) {
+          .hm-wrap { min-height: 100dvh; }
         }
-        .hm-sk {
-          background: linear-gradient(90deg, #02275b 25%, #02356e 50%, #02275b 75%);
-          background-size: 200% 100%;
-          animation: hmShimmer 1.5s ease-in-out infinite;
-          border-radius: 6px;
-          display: block;
+
+        .hm-loader {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 22px;
+          /* Debounced: starts invisible and fades in after 120ms, so a fast
+             load never flashes a spinner on screen. */
+          opacity: 0;
+          animation: hmFadeIn 0.35s ease 0.12s forwards;
         }
+
+        .hm-ring {
+          position: relative;
+          width: 76px;
+          height: 76px;
+        }
+        .hm-ring span {
+          position: absolute;
+          border-radius: 50%;
+          box-sizing: border-box;
+        }
+        /* Faint full circle the arcs travel around */
+        .hm-track {
+          inset: 0;
+          border: 3px solid rgba(6, 208, 1, 0.20);
+        }
+        /* Outer green arc, clockwise */
+        .hm-arc-outer {
+          inset: 0;
+          border: 3px solid transparent;
+          border-top-color: #06D001;
+          border-right-color: rgba(6, 208, 1, 0.45);
+          animation: hmSpin 0.9s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        }
+        /* Inner cyan arc, counter-clockwise — picks up the accent colour
+           already used by the section-header underlines. */
+        .hm-arc-inner {
+          inset: 13px;
+          border: 2px solid transparent;
+          border-bottom-color: #22d3ee;
+          animation: hmSpinReverse 1.3s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        }
+        /* Breathing core dot */
+        .hm-core {
+          top: 50%;
+          left: 50%;
+          width: 9px;
+          height: 9px;
+          margin: -4.5px 0 0 -4.5px;
+          background: #06D001;
+          box-shadow: 0 0 12px rgba(6, 208, 1, 0.65);
+          animation: hmPulse 1.5s ease-in-out infinite;
+        }
+
         .hm-brand {
+          margin: 0;
           color: #ffffff;
+          font-family: var(--font-poppins), Poppins, sans-serif;
           font-weight: 700;
-          font-size: 1.1rem;
+          font-size: 1.15rem;
           letter-spacing: -0.01em;
-          animation: hmPulse 1.6s ease-in-out infinite;
+          white-space: nowrap;
         }
+        .hm-brand i {
+          color: #06D001;
+          font-style: normal;
+        }
+        .hm-sub {
+          margin: 0;
+          color: #bcc4ba;
+          font-family: var(--font-poppins), Poppins, sans-serif;
+          font-size: 0.75rem;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          animation: hmDim 1.6s ease-in-out infinite;
+        }
+
+        @keyframes hmSpin        { to { transform: rotate(360deg);  } }
+        @keyframes hmSpinReverse { to { transform: rotate(-360deg); } }
+        @keyframes hmFadeIn      { to { opacity: 1; } }
+        @keyframes hmPulse {
+          0%, 100% { transform: scale(0.7); opacity: 0.55; }
+          50%      { transform: scale(1);   opacity: 1;    }
+        }
+        @keyframes hmDim {
+          0%, 100% { opacity: 0.45; }
+          50%      { opacity: 0.9;  }
+        }
+
+        /* Accessibility: hold a static ring rather than spinning it. */
         @media (prefers-reduced-motion: reduce) {
-          .hm-sk, .hm-brand { animation: none; }
+          .hm-loader   { opacity: 1; animation: none; }
+          .hm-arc-outer,
+          .hm-arc-inner,
+          .hm-core,
+          .hm-sub      { animation: none; }
+          .hm-arc-outer { border-right-color: rgba(6, 208, 1, 0.45); }
         }
       `}</style>
 
-      {/* Header shell — mirrors NavBar's 64px bar so nothing jumps on swap */}
-      <div style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 999,
-        background: "rgba(1,20,40,0.92)",
-        backdropFilter: "blur(12px)",
-        height: "64px",
-      }}>
-        <div style={{
-          maxWidth: "1200px", margin: "0 auto", padding: "0 1.5rem",
-          height: "64px", display: "flex", alignItems: "center",
-          justifyContent: "space-between",
-        }}>
-          <span className="hm-brand">
-            Nahid<span style={{ color: "#06D001" }}>.</span>Hasan
-          </span>
-          <span className="hm-sk" style={{ width: "180px", height: "12px" }} />
+      <div className="hm-loader" role="status" aria-live="polite" aria-label="Loading portfolio">
+        <div className="hm-ring" aria-hidden="true">
+          <span className="hm-track" />
+          <span className="hm-arc-outer" />
+          <span className="hm-arc-inner" />
+          <span className="hm-core" />
         </div>
-      </div>
-      <div style={{ height: "64px" }} />
 
-      {/* Hero shell */}
-      <section style={{
-        minHeight: "calc(100vh - 64px)",
-        display: "flex", alignItems: "center",
-        padding: "4rem 1.5rem 3rem",
-      }}>
-        <div style={{
-          maxWidth: "1200px", margin: "0 auto", width: "100%",
-          display: "flex", flexDirection: "column", gap: "16px",
-        }}>
-          <span className="hm-sk" style={{ width: "min(180px, 60%)", height: "13px" }} />
-          <span className="hm-sk" style={{ width: "min(520px, 90%)", height: "44px" }} />
-          <span className="hm-sk" style={{ width: "min(380px, 75%)", height: "44px" }} />
-          <span className="hm-sk" style={{ width: "min(600px, 95%)", height: "12px", marginTop: "10px" }} />
-          <span className="hm-sk" style={{ width: "min(540px, 88%)", height: "12px" }} />
-          <div style={{ display: "flex", gap: "12px", marginTop: "18px" }}>
-            <span className="hm-sk" style={{ width: "150px", height: "42px", borderRadius: "8px" }} />
-            <span className="hm-sk" style={{ width: "130px", height: "42px", borderRadius: "8px" }} />
-          </div>
-        </div>
-      </section>
+        <p className="hm-brand">Nahid<i>.</i>Hasan</p>
+        <p className="hm-sub">Loading</p>
+      </div>
     </main>
   );
 }
