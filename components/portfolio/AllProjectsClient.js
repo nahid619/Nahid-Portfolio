@@ -17,8 +17,9 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { SectionHeader, TabGroup, TechBadge } from "@/components/shared";
+import { SectionHeader, TabGroup, TechBadge, NavProgress } from "@/components/shared";
 import ProjectModal from "@/components/portfolio/ProjectModal";
+import { getCategoryStyle, getCategoryLabel } from "@/lib/categoryStyles";
 
 export default function AllProjectsClient({ initialProjects = [], categories = [] }) {
   // Build tabs from DB categories — always add "All" at the front
@@ -59,6 +60,8 @@ export default function AllProjectsClient({ initialProjects = [], categories = [
           <polyline points="12 19 5 12 12 5"/>
         </svg>
         Back to Portfolio
+        {/* Spinner while the (force-dynamic) homepage streams in */}
+        <NavProgress size={12} color="#bcc4ba" label="Loading portfolio" />
       </Link>
 
       {/*
@@ -99,6 +102,7 @@ export default function AllProjectsClient({ initialProjects = [], categories = [
             key={`${activeTab}-${project._id}`}
             project={project}
             index={i}
+            categories={categories}
             onClick={() => setSelected(project)}
           />
         ))}
@@ -120,13 +124,12 @@ export default function AllProjectsClient({ initialProjects = [], categories = [
   );
 }
 
-function ProjectCard({ project, index, onClick }) {
-  const categoryColors = {
-    salesforce: { bg: "#0c2a4a", text: "#60a5fa", label: "Salesforce" },
-    sqa:        { bg: "#0e3501", text: "#9BEC00", label: "SQA"        },
-    web:        { bg: "#2d1b00", text: "#fb923c", label: "Web"        },
-  };
-  const cat = categoryColors[project.category] || categoryColors.web;
+function ProjectCard({ project, index, categories = [], onClick }) {
+  // Label from the DB category record, colour from a lookup that degrades
+  // gracefully. Previously a hardcoded map with a `|| categoryColors.web`
+  // fallback, which is why "Special" projects were badged "Web".
+  const catStyle = getCategoryStyle(project.category);
+  const catLabel = getCategoryLabel(project.category, categories);
 
   return (
     <div
@@ -175,15 +178,18 @@ function ProjectCard({ project, index, onClick }) {
           </span>
         )}
 
-        {/* Category badge */}
-        <div style={{
-          position: "absolute", top: "10px", right: "10px",
-          background: cat.bg, color: cat.text,
-          fontSize: "0.7rem", fontWeight: 700,
-          padding: "3px 9px", borderRadius: "4px", letterSpacing: "0.05em",
-        }}>
-          {cat.label}
-        </div>
+        {/* Category badge — hidden entirely if the project has no category,
+            rather than mislabelling it. */}
+        {catLabel && (
+          <div style={{
+            position: "absolute", top: "10px", right: "10px",
+            background: catStyle.bg, color: catStyle.text,
+            fontSize: "0.7rem", fontWeight: 700,
+            padding: "3px 9px", borderRadius: "4px", letterSpacing: "0.05em",
+          }}>
+            {catLabel}
+          </div>
+        )}
       </div>
 
       {/* Body */}

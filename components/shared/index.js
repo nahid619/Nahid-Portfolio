@@ -6,3 +6,4 @@ export { default as SkeletonLoader, SkeletonCard, SkeletonSkillCard } from "./Sk
 export { default as ArrowNav } from "./ArrowNav";
 export { default as Modal } from "./Modal";
 export { default as TechBadge } from "./TechBadge";
+export { default as NavProgress } from "./NavProgress";

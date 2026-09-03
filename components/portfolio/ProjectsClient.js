@@ -14,7 +14,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { TabGroup, TechBadge } from "@/components/shared";
+import { TabGroup, TechBadge, NavProgress } from "@/components/shared";
 import ProjectModal from "./ProjectModal";
 
 export default function ProjectsClient({
@@ -124,6 +124,10 @@ export default function ProjectsClient({
             <span style={{ fontSize: "2rem", color: "#06D001" }}>→</span>
             <span style={{ color: "#06D001", fontSize: "0.938rem", fontWeight: 700 }}>See All Projects</span>
             <span style={{ color: "#bcc4ba", fontSize: "0.75rem" }}>View all {totalCount} projects</span>
+            {/* Immediate feedback on click — /projects is force-dynamic, so
+                even with its loading.js there can be a beat on slow networks
+                before the prefetched shell is ready. */}
+            <NavProgress label="Loading all projects" />
           </Link>
         </div>
       </div>
