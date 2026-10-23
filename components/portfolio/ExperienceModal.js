@@ -1,10 +1,11 @@
 // components/portfolio/ExperienceModal.js
 "use client";
 
-import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { TechBadge } from "@/components/shared";
+// Imported directly (not via the barrel) to keep this file's imports explicit
+import useDialog from "@/components/shared/useDialog";
 
 function fmt(dateStr) {
   if (!dateStr) return "";
@@ -25,16 +26,8 @@ function calcDuration(startDate, endDate, isCurrent) {
 }
 
 export default function ExperienceModal({ exp, isOpen, onClose }) {
-  useEffect(() => {
-    if (!isOpen) return;
-    document.body.style.overflow = "hidden";
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [isOpen, onClose]);
+  // Scroll lock, Escape, focus trap and focus restore (shared with Modal)
+  const panelRef = useDialog(isOpen && !!exp, onClose);
 
   // Don't render on server or when closed
   if (!isOpen || !exp) return null;
@@ -69,6 +62,11 @@ export default function ExperienceModal({ exp, isOpen, onClose }) {
 
       {/* Panel */}
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={exp.role ? `${exp.role} at ${exp.company}` : "Experience details"}
+        tabIndex={-1}
         onClick={e => e.stopPropagation()}
         style={{
           position: "relative",    /* ← for absolute × button */
@@ -86,6 +84,8 @@ export default function ExperienceModal({ exp, isOpen, onClose }) {
       >
         {/* × button — absolutely pinned to top-right, always visible */}
         <button
+          type="button"
+          data-modal-close
           onClick={onClose}
           aria-label="Close"
           style={{

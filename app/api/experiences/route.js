@@ -1,6 +1,7 @@
 // app/api/experiences/route.js
 export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 
 // GET /api/experiences
@@ -22,6 +23,9 @@ export async function GET() {
 
 // POST /api/experiences
 export async function POST(request) {
+  const denied = await requireAdmin(request);
+  if (denied) return denied;
+
   try {
     const db = await getDb();
     const body = await request.json();

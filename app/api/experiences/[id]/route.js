@@ -1,10 +1,14 @@
 // app/api/experiences/[id]/route.js
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
 // PUT /api/experiences/[id]
 export async function PUT(request, { params }) {
+  const denied = await requireAdmin(request);
+  if (denied) return denied;
+
   try {
     const db = await getDb();
     const { id } = await params;
@@ -28,6 +32,9 @@ export async function PUT(request, { params }) {
 
 // DELETE /api/experiences/[id]
 export async function DELETE(request, { params }) {
+  const denied = await requireAdmin(request);
+  if (denied) return denied;
+
   try {
     const db = await getDb();
     const { id } = await params;

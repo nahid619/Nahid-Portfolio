@@ -1,7 +1,9 @@
 // app/api/certifications/route.js
 export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
+import { normalizeCert } from "@/lib/certFields";
 
 // GET /api/certifications
 export async function GET() {
@@ -21,16 +23,18 @@ export async function GET() {
 
 // POST /api/certifications
 export async function POST(request) {
+  const denied = await requireAdmin(request);
+  if (denied) return denied;
+
   try {
     const db = await getDb();
     const body = await request.json();
 
-    const doc = {
-      title: body.title || "",
-      imageUrl: body.imageUrl || "",  // Cloudinary URL
-      order: body.order || 0,
-      createdAt: new Date(),
-    };
+    const doc = { ...normalizeCert(body), createdAt: new Date() };
+
+    if (!doc.title) {
+      return NextResponse.json({ message: "Title is required" }, { status: 400 });
+    }
 
     const result = await db.collection("certifications").insertOne(doc);
     return NextResponse.json({ success: true, insertedId: result.insertedId }, { status: 201 });

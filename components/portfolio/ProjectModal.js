@@ -65,7 +65,7 @@ export default function ProjectModal({ project, isOpen, onClose }) {
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="520px" footer={footer}>
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="520px" footer={footer} label={project.title}>
       {/* Project image */}
       <div
         style={{

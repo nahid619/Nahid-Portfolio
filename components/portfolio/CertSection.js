@@ -2,7 +2,7 @@
 // Phase 4 change: removed useFetch
 // Now receives certifications as prop from page.js
 // This is a server component — no "use client"
-// The carousel interaction is handled by CertClient
+// Interaction (spotlight, grid, viewer modal) is handled by CertClient
 
 import { SectionWrapper, SectionHeader } from "@/components/shared";
 import CertClient from "./CertClient";
@@ -14,13 +14,10 @@ export default function CertSection({ certifications = [] }) {
         <SectionHeader title="Certifications" subtitle="Training and certifications" />
 
         {/*
-          CertClient handles:
-          - The sliding carousel (needs useState for index)
-          - Auto-rotate interval (needs useEffect)
-          - Arrow nav and dot nav clicks
-          Data is passed down — no fetching inside
+          Homepage preview: spotlight + top 3 by display order + "See all"
+          (→ /certifications). Data is passed down — no fetching inside.
         */}
-        <CertClient certifications={certifications} />
+        <CertClient certifications={certifications} variant="preview" />
       </div>
     </SectionWrapper>
   );

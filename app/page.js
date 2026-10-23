@@ -4,7 +4,7 @@
 // skills / projects / certs / experiences won't appear until a server restart.
 export const dynamic = "force-dynamic";
 
-import { getHomePageData } from "@/lib/data";
+import { getHomePageData, getProfile } from "@/lib/data";
 import { formatExperienceForDisplay } from "@/lib/calculateExperience";
 
 import NavBar            from "@/components/portfolio/NavBar";
@@ -19,6 +19,33 @@ import ContactSection    from "@/components/portfolio/ContactSection";
 import Footer            from "@/components/portfolio/Footer";
 import ContactModalWrapper from "@/components/portfolio/ContactModalWrapper";
 import ScrollToTop       from "@/components/portfolio/ScrollToTop";
+
+// Search / link-preview text follows the CMS profile, so editing the
+// headline in the admin panel also updates Google and LinkedIn previews.
+// getProfile is wrapped in React cache(), so this shares the page's query.
+const FALLBACK_DESCRIPTION =
+  "Salesforce Technical Consultant and Certified Agentforce Specialist. Flow Builder automation, Apex, LWC, end-to-end QA and API testing.";
+
+function clip(text, max = 160) {
+  if (!text || text.length <= max) return text;
+  const cut = text.slice(0, max);
+  return cut.slice(0, cut.lastIndexOf(" ")).replace(/[,.;:\s]+$/, "") + "…";
+}
+
+export async function generateMetadata() {
+  const profile = await getProfile();
+  const role = (profile?.jobTitle || "Salesforce Technical Consultant").split("|")[0].trim();
+  const title = `Nahid Hasan — ${role}`;
+  const description = clip(profile?.heroDescription) || FALLBACK_DESCRIPTION;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: "/" },
+    openGraph: { title, description, url: "/", type: "profile", siteName: "Nahid Hasan" },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}
 
 export default async function Home() {
   const data = await getHomePageData();
@@ -46,18 +73,10 @@ export default async function Home() {
         projectCount={projectCount}
       />
 
+      {/* Order: proof first. Recruiters scan for experience, projects and
+          certifications; skills and education support those claims. */}
       <ExperienceSection
         experiences={data.experiences}
-      />
-
-      <SkillsSection
-        skillCategories={data.skillCategories}
-        skills={data.skills}
-        firstSkillTab={data.firstSkillTab}
-      />
-
-      <QualificationSection
-        qualifications={data.qualifications}
       />
 
       <ProjectsSection
@@ -69,6 +88,16 @@ export default async function Home() {
 
       <CertSection
         certifications={data.certifications}
+      />
+
+      <SkillsSection
+        skillCategories={data.skillCategories}
+        skills={data.skills}
+        firstSkillTab={data.firstSkillTab}
+      />
+
+      <QualificationSection
+        qualifications={data.qualifications}
       />
 
       <ContactSection />

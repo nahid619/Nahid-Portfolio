@@ -17,7 +17,7 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { SectionHeader, TabGroup, TechBadge, NavProgress } from "@/components/shared";
+import { SectionHeader, TabGroup, TechBadge, NavProgress, CardButton } from "@/components/shared";
 import ProjectModal from "@/components/portfolio/ProjectModal";
 import { getCategoryStyle, getCategoryLabel } from "@/lib/categoryStyles";
 
@@ -134,6 +134,7 @@ function ProjectCard({ project, index, categories = [], onClick }) {
   return (
     <div
       onClick={onClick}
+      className="kb-card"
       style={{
         background: "#00193b",
         border: "1px solid #02275b",
@@ -167,7 +168,7 @@ function ProjectCard({ project, index, categories = [], onClick }) {
         {project.projectImageUrl ? (
           <Image
             src={project.projectImageUrl}
-            alt={project.title}
+            alt=""
             fill
             style={{ objectFit: "cover" }}
             sizes="(max-width: 600px) 100vw, 300px"
@@ -195,7 +196,7 @@ function ProjectCard({ project, index, categories = [], onClick }) {
       {/* Body */}
       <div style={{ padding: "14px 16px", textAlign: "left" }}>
         <h3 style={{ color: "white", fontSize: "1rem", fontWeight: 700, margin: "0 0 6px", lineHeight: 1.3 }}>
-          {project.title}
+          <CardButton onClick={onClick}>{project.title}</CardButton>
         </h3>
 
         <p style={{

@@ -3,32 +3,46 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { useRouter, usePathname } from "next/navigation";
 import { smoothScrollTo } from "@/lib/smoothScroll";
 
+// Same order as the sections in app/page.js. "Education" replaces
+// "Qualification" as the label (shorter, and the term most recruiters
+// scan for); the #qualification anchor is kept so existing links work.
 const NAV_LINKS = [
   { label: "Home",           href: "#home"          },
   { label: "About",          href: "#about"         },
   { label: "Experience",     href: "#experience"    },
-  { label: "Skills",         href: "#skills"        },
-  { label: "Qualification",  href: "#qualification" },
   { label: "Projects",       href: "#portfolio"     },
   { label: "Certifications", href: "#certification" },
+  { label: "Skills",         href: "#skills"        },
+  { label: "Education",      href: "#qualification" },
   { label: "Contact",        href: "#contact"       },
 ];
 
 const HEADER_OFFSET = 70;
 
+// Sub-pages have no homepage sections for the scroll observer to track, so
+// the nav used to sit on "Home" there. Highlight the matching section instead.
+const PAGE_SECTION = {
+  "/projects":       "portfolio",
+  "/experiences":    "experience",
+  "/certifications": "certification",
+};
+
 // navLinks comes as a prop from page.js — no more useFetch
 export default function NavBar({ navLinks = [] }) {
   const [scrolled,      setScrolled] = useState(false);
   const [menuOpen,      setMenuOpen] = useState(false);
-  const [activeSection, setActive  ] = useState("home");
+  const pathname = usePathname();
+  const [activeSection, setActive  ] = useState(PAGE_SECTION[pathname] ?? "home");
 
   // True while a programmatic scroll is running. The IntersectionObserver
   // below fires for every section we fly past during the 800ms animation,
   // which made the green highlight strobe across the nav. We freeze the
   // active state for the duration of the animation instead.
   const scrollingRef = useRef(false);
+  const router = useRouter();
 
   // handleNavClick lives inside the component now so it can reach
   // scrollingRef and setActive.
@@ -36,7 +50,15 @@ export default function NavBar({ navLinks = [] }) {
     e.preventDefault();
     const id = href.replace("#", "");
     const el = document.getElementById(id);
-    if (!el) return;
+
+    // On /projects, /experiences and /certifications the section isn't on
+    // this page. This used to `return` silently, so every nav link on those
+    // pages did nothing. Go to the homepage section instead — the hash
+    // effect below scrolls to it once the homepage mounts.
+    if (!el) {
+      router.push(`/${href}`);
+      return;
+    }
 
     const top = el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
 
@@ -109,7 +131,6 @@ export default function NavBar({ navLinks = [] }) {
     });
 
     return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -9,15 +9,22 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
+// metadataBase turns relative URLs (og:url, the generated og:image) into
+// absolute ones, which LinkedIn / WhatsApp / Slack previews require.
+// The old og:url pointed at nahid-hasan-00619.vercel.app — the previous
+// static site — so shared links previewed the wrong domain.
+// Set NEXT_PUBLIC_SITE_URL in Vercel if you add a custom domain.
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "https://nahidhasan00619.vercel.app");
+
 export const metadata = {
-  title: "Nahid Hasan — Portfolio",
+  metadataBase: new URL(SITE_URL),
+  title: "Nahid Hasan — Salesforce Technical Consultant",
   description:
-    "Salesforce Technical Consultant & QA Automation Engineer. Hands-on experience in Flow Builder automation, end-to-end QA testing, and API testing.",
-  openGraph: {
-    title: "Nahid Hasan - Portfolio",
-    url: "https://nahid-hasan-00619.vercel.app/",
-    type: "website",
-  },
+    "Salesforce Technical Consultant and Certified Agentforce Specialist. Flow Builder automation, Apex, LWC, end-to-end QA and API testing.",
 };
 
 export default function RootLayout({ children }) {

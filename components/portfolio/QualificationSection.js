@@ -82,7 +82,7 @@ export default function QualificationSection({ qualifications }) {
   return (
     <SectionWrapper id="qualification">
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1.5rem" }}>
-        <SectionHeader title="Qualification" subtitle="My personal journey" />
+        <SectionHeader title="Education" subtitle="Academic background" />
 
         <div style={{ maxWidth: "800px", margin: "0 auto" }}>
           {items.map((item, i) => (

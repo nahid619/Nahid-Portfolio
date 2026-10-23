@@ -7,7 +7,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { SectionHeader, TechBadge, SkeletonLoader } from "@/components/shared";
+import { SectionHeader, TechBadge, SkeletonLoader, CardButton } from "@/components/shared";
 import ExperienceModal from "@/components/portfolio/ExperienceModal";
 
 function formatPeriod(startDate, endDate, isCurrent) {
@@ -76,7 +76,7 @@ export default function AllExperiencesClient({ experiences = [] }) {
             <div
               key={exp._id}
               onClick={() => setSelected(exp)}
-              className="exp-row"
+              className="exp-row kb-card"
               style={{
                 background: "#00193b",
                 border: "1px solid #02275b",
@@ -112,7 +112,7 @@ export default function AllExperiencesClient({ experiences = [] }) {
                 {exp.companyLogoUrl ? (
                   <Image
                     src={exp.companyLogoUrl}
-                    alt={exp.company}
+                    alt=""
                     fill
                     style={{ objectFit: "cover" }}
                     sizes="52px"
@@ -125,7 +125,9 @@ export default function AllExperiencesClient({ experiences = [] }) {
               {/* Content */}
               <div style={{ textAlign: "left" }}>
                 <h3 style={{ color: "white", fontSize: "1rem", fontWeight: 700, margin: "0 0 3px" }}>
-                  {exp.role}
+                  <CardButton onClick={() => setSelected(exp)} label={`${exp.role} at ${exp.company}`}>
+                    {exp.role}
+                  </CardButton>
                 </h3>
                 <div style={{ color: "#06D001", fontSize: "0.875rem", marginBottom: "4px" }}>
                   {exp.company}{exp.employmentType ? ` · ${exp.employmentType}` : ""}

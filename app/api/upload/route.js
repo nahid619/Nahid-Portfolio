@@ -1,5 +1,6 @@
 // app/api/upload/route.js
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth";
 import { v2 as cloudinary } from "cloudinary";
 
 export const runtime = "nodejs";
@@ -22,6 +23,9 @@ function uploadBuffer(buffer, options) {
 }
 
 export async function POST(request) {
+  const denied = await requireAdmin(request);
+  if (denied) return denied;
+
   try {
     const formData    = await request.formData();
     const file        = formData.get("file");

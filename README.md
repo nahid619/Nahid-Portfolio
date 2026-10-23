@@ -1,5 +1,7 @@
 # Nahid Hasan — Portfolio v2
 
+> See [CHANGES.md](CHANGES.md) for the latest round of security, accessibility and certification-section changes.
+
 A modern, full-stack portfolio website with a complete admin CMS. Built with **Next.js (App Router)**, **MongoDB Atlas**, **Cloudinary**, and **NextAuth.js**. Deployed on **Vercel**.
 
 ---
@@ -53,6 +55,9 @@ nahid-portfolio-v2/
 │   ├── experiences/
 │   │   └── page.js                        ← All experiences page (/experiences)
 │   │
+│   ├── certifications/
+│   │   └── page.js                        ← All certifications page (/certifications)
+│   │
 │   └── api/
 │       ├── auth/
 │       │   └── [...nextauth]/
@@ -95,6 +100,8 @@ nahid-portfolio-v2/
 │   │   ├── TabGroup.js                    ← Reusable tab switcher (Skills + Projects)
 │   │   ├── SkeletonLoader.js              ← Shimmer loading placeholders (line, circle, card)
 │   │   ├── ArrowNav.js                    ← Left/right arrow navigation buttons
+│   │   ├── useDialog.js                   ← Shared modal behaviour: focus trap, Escape, scroll lock
+│   │   ├── CardButton.js                  ← Keyboard-reachable title button for clickable cards
 │   │   ├── Modal.js                       ← Generic modal with portal + pinned × button
 │   │   └── TechBadge.js                   ← Colored pill/tag component
 │   │
@@ -108,7 +115,10 @@ nahid-portfolio-v2/
 │   │   ├── QualificationSection.js        ← Two-column timeline (DB-driven with hardcoded fallback)
 │   │   ├── ProjectsSection.js             ← DB-driven tab categories + 3 cards + "See All" card
 │   │   ├── ProjectModal.js                ← Scrollable project detail + pinned × + action buttons
-│   │   ├── CertSection.js                 ← Auto-rotating 3s carousel, 3 visible, uniform card size
+│   │   ├── CertSection.js                 ← Server wrapper for the certifications section
+│   │   ├── CertClient.js                  ← Spotlight + top 3 + See all (home) / full grid (/certifications)
+│   │   ├── CertModal.js                   ← Full-size certificate viewer + verify link
+│   │   ├── certUtils.js                   ← Date formatting, placeholder icon, featured split
 │   │   ├── ContactSection.js              ← Contact info items + mailto message form
 │   │   ├── ContactModal.js                ← Dynamic contact options from socialLinks (contact-modal)
 │   │   ├── Footer.js                      ← 3-column footer, smooth scroll quick links, fade-in animations
@@ -139,7 +149,7 @@ nahid-portfolio-v2/
 ├── scripts/
 │   └── seed.js                            ← One-time DB seed script (run: npm run seed)
 │
-├── middleware.js                          ← Route protection — redirects unauthenticated /admin/dashboard
+├── proxy.js                               ← Redirects unauthenticated /admin/dashboard (Next 16 name for middleware)
 ├── next.config.mjs                        ← Next.js config (Cloudinary remotePatterns, SVG, 10MB body)
 ├── jsconfig.json                          ← Path aliases (@/ → project root)
 ├── package.json                           ← Dependencies + npm scripts

@@ -53,7 +53,39 @@ img { max-width: 100%; height: auto; }
 :focus-visible { outline: 2px solid var(--green-2); outline-offset: 2px; border-radius: 3px; }
 
 /* ── Input placeholder ── */
-input::placeholder, textarea::placeholder { color: #1e3050; }
+/* Was #1e3050 (1.4:1 contrast on the navy inputs — effectively invisible).
+   #7d8a9c is 5.3:1: readable, still clearly dimmer than typed text. */
+input::placeholder, textarea::placeholder { color: #7d8a9c; opacity: 1; }
+
+/* ── Card title buttons (components/shared/CardButton.js) ── */
+.card-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+.card-btn:focus-visible { outline: 2px solid var(--green-2); outline-offset: 3px; }
+/* Highlight the whole card while its title button has keyboard focus */
+.kb-card:has(.card-btn:focus-visible) { border-color: #06D001 !important; }
+
+/* ── Reduced motion ──
+   Respects the OS "reduce motion" setting: entrance animations, the hero
+   blob morph and hover lifts finish instantly. Elements that start at
+   opacity 0 and animate in use fill-mode forwards/both, so they still end
+   up visible. lib/smoothScroll.js checks the same setting for JS scrolls. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+}
 
 /* ── Tab content animation ── */
 @keyframes tabFadeIn {
@@ -279,13 +311,7 @@ input::placeholder, textarea::placeholder { color: #1e3050; }
   }
 }
 
-/* ── Cert strip: responsive card width ── */
-@media (max-width: 600px) {
-  .cert-card { min-width: 160px !important; }
-}
-@media (max-width: 400px) {
-  .cert-card { min-width: 140px !important; }
-}
+/* Certifications layout lives in CertClient.js (the old carousel rules were removed) */
 
 /* ── Contact: stack on mobile ── */
 @media (max-width: 768px) {

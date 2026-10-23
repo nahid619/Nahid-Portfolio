@@ -1,7 +1,7 @@
 // components/shared/Modal.js
 "use client";
 
-import { useEffect } from "react";
+import useDialog from "./useDialog";
 import { createPortal } from "react-dom";
 
 /**
@@ -21,34 +21,22 @@ import { createPortal } from "react-dom";
  *   children — modal body content
  *   footer   — JSX for pinned footer buttons (optional)
  *   maxWidth — CSS max-width of modal panel (default "500px")
+ *   label    — accessible name announced by screen readers (e.g. the
+ *              project or certificate title)
+ *
+ * Accessibility: role="dialog" + aria-modal; focus handling, Escape and
+ * scroll lock come from useDialog (shared with ExperienceModal).
  */
+
 export default function Modal({
   isOpen,
   onClose,
   children,
   footer,
   maxWidth = "500px",
+  label = "Dialog",
 }) {
-  // Lock body scroll when open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
-
-  // Escape key closes modal
-  useEffect(() => {
-    function handleKey(e) {
-      if (e.key === "Escape") onClose();
-    }
-    if (isOpen) document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [isOpen, onClose]);
+  const panelRef = useDialog(isOpen, onClose);
 
   // Don't render on server or when closed
   if (!isOpen) return null;
@@ -87,6 +75,11 @@ export default function Modal({
       >
         {/* Panel */}
         <div
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={label}
+          tabIndex={-1}
           onClick={(e) => e.stopPropagation()}
           style={{
             position: "relative",   /* ← needed for absolute × button */
@@ -104,8 +97,10 @@ export default function Modal({
         >
           {/* × button — absolutely pinned to top-right of panel, never scrolls */}
           <button
+            type="button"
+            data-modal-close
             onClick={onClose}
-            aria-label="Close modal"
+            aria-label="Close"
             style={{
               position: "absolute",
               top: "12px",

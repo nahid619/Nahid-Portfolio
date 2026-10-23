@@ -13,7 +13,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { TechBadge } from "@/components/shared";
+import { TechBadge, CardButton } from "@/components/shared";
 import ExperienceModal from "./ExperienceModal";
 
 function formatPeriodShort(startDate, endDate, isCurrent) {
@@ -116,6 +116,7 @@ function ExperienceCard({ exp, onClick }) {
   return (
     <div
       onClick={onClick}
+      className="kb-card"
       style={{
         background: "#00193b",
         border: "1px solid #02275b",
@@ -154,7 +155,7 @@ function ExperienceCard({ exp, onClick }) {
           {exp.companyLogoUrl ? (
             <Image
               src={exp.companyLogoUrl}
-              alt={exp.company}
+              alt=""
               fill
               style={{ objectFit: "cover" }}
               sizes="42px"
@@ -164,18 +165,25 @@ function ExperienceCard({ exp, onClick }) {
           )}
         </div>
         <div style={{ minWidth: 0 }}>
-          <div style={{
-            color: "white",
-            fontSize: "0.875rem",
-            fontWeight: 700,
-            lineHeight: 1.3,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            maxWidth: "100%",
-          }}>
-            {exp.role}
-          </div>
+          <h3 style={{ margin: 0, fontSize: "inherit", fontWeight: "inherit" }}>
+            <CardButton
+              onClick={onClick}
+              label={`${exp.role} at ${exp.company}`}
+              style={{
+                display: "block",
+                width: "100%",
+                color: "white",
+                fontSize: "0.875rem",
+                fontWeight: 700,
+                lineHeight: 1.3,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {exp.role}
+            </CardButton>
+          </h3>
           <div style={{ color: "#06D001", fontSize: "0.8rem" }}>
             {exp.company}
           </div>

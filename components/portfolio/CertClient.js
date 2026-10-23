@@ -1,189 +1,304 @@
 // components/portfolio/CertClient.js
-// Phase 4 — NEW FILE
 //
-// Why this exists:
-// CertSection is now a server component.
-// But the carousel needs useState (index) and useEffect (auto-rotate).
-// All interactive carousel logic lives here.
-// The certifications data comes in as a prop — no fetching.
+// Certifications, in two variants:
+//   variant="preview" (homepage) — the spotlight card, the next 3 certs by
+//                                  display order, and a "See all" card that
+//                                  links to /certifications. Mirrors how the
+//                                  Projects and Experience sections preview.
+//   variant="all" (/certifications) — the spotlight card plus every cert.
+// Clicking any certificate opens the full-size viewer (CertModal).
+//
+// Replaces the old auto-rotating carousel, which assumed 3 visible cards when
+// ~5 fit at desktop width (sliding up to 468px into empty space), advanced
+// every 3s with no pause control, and cropped the certificates.
+//
+// Data stays a prop — no fetching here.
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import Image from "next/image";
-import { ArrowNav } from "@/components/shared";
+import Link from "next/link";
+import { TechBadge, NavProgress } from "@/components/shared";
+import CertModal from "./CertModal";
+import { formatIssueDate, CertPlaceholder, splitFeatured } from "./certUtils";
 
-const VISIBLE = 3;
+// 3 tiles + the "See all" card = exactly one row of the 4-column desktop grid
+const PREVIEW_COUNT = 3;
 
-function useCardWidth() {
-  const [w, setW] = useState(220);
-  useEffect(() => {
-    function calc() {
-      const vw = window.innerWidth;
-      if      (vw < 480) setW(Math.floor((vw - 48) / 2));
-      else if (vw < 768) setW(Math.floor((vw - 64) / 2));
-      else               setW(220);
-    }
-    calc();
-    window.addEventListener("resize", calc);
-    return () => window.removeEventListener("resize", calc);
-  }, []);
-  return w;
-}
-
-export default function CertClient({ certifications = [] }) {
-  const [idx,    setIdx]    = useState(0);
-  const CARD_W   = useCardWidth();
-  const CARD_GAP = 12;
-
-  const maxIdx = Math.max(0, certifications.length - VISIBLE);
-
-  const next = useCallback(() => {
-    setIdx(i => (i >= maxIdx ? 0 : i + 1));
-  }, [maxIdx]);
-
-  const prev = () => setIdx(i => Math.max(0, i - 1));
-
-  // Auto-rotate every 3s
-  useEffect(() => {
-    if (!certifications.length) return;
-    const timer = setInterval(() => {
-      setIdx(i => (i >= maxIdx ? 0 : i + 1));
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [certifications.length, maxIdx, CARD_W]);
+export default function CertClient({ certifications = [], variant = "preview" }) {
+  const [selected, setSelected] = useState(null);
 
   if (!certifications.length) return null;
 
+  const { featured, rest } = splitFeatured(certifications);
+  const isPreview   = variant === "preview";
+  const shown       = isPreview ? rest.slice(0, PREVIEW_COUNT) : rest;
+  const showSeeAll  = isPreview && rest.length > shown.length;
+
   return (
     <>
-      {/* Cards strip */}
-      <div style={{ overflow: "hidden" }}>
-        <div style={{
-          display: "flex",
-          gap: `${CARD_GAP}px`,
-          transform: `translateX(calc(-${idx} * ${CARD_W + CARD_GAP}px))`,
-          transition: "transform 0.45s cubic-bezier(0.4,0,0.2,1)",
-        }}>
-          {certifications.map(cert => (
-            <div
-              key={cert._id}
-              className="cert-card"
-              style={{
-                width:      `${CARD_W}px`,
-                flexShrink: 0,
-                background: "#00193b",
-                border: "1px solid #02275b",
-                borderRadius: "10px",
-                overflow: "hidden",
-                transition: "border-color 0.2s, box-shadow 0.2s",
-                display: "flex",
-                flexDirection: "column",
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = "#059212";
-                e.currentTarget.style.boxShadow   = "0 4px 16px rgba(5,146,18,0.2)";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = "#02275b";
-                e.currentTarget.style.boxShadow   = "none";
-              }}
-            >
-              {/* Image area — fixed height */}
-              <div style={{
-                height: "130px",
-                flexShrink: 0,
-                background: "#02275b",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
-                position: "relative",
-              }}>
-                {cert.imageUrl ? (
-                  <Image
-                    src={cert.imageUrl}
-                    alt={cert.title}
-                    fill
-                    style={{ objectFit: "cover" }}
-                    sizes={`${CARD_W}px`}
-                  />
-                ) : (
-                  <span style={{ fontSize: "2rem" }}>📜</span>
-                )}
-              </div>
-
-              {/* Title area — fixed height, clamped to 2 lines */}
-              <div style={{
-                height: "56px",
-                flexShrink: 0,
-                padding: "0 10px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
-              }}>
-                <span style={{
-                  color: "#9BEC00",
-                  fontSize: "0.75rem",
-                  fontWeight: 600,
-                  lineHeight: 1.4,
-                  textAlign: "center",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                }}>
-                  {cert.title}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Arrow nav */}
-      <ArrowNav
-        onPrev={prev}
-        onNext={next}
-        prevDisabled={idx === 0}
-        nextDisabled={idx >= maxIdx}
-      />
-
-      {/* Dots */}
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        gap: "6px",
-        marginTop: "12px",
-      }}>
-        {certifications.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setIdx(Math.min(i, maxIdx))}
-            style={{
-              width: "8px", height: "8px",
-              borderRadius: "50%",
-              border: "none",
-              cursor: "pointer",
-              background: i === idx ? "#059212" : "#02275b",
-              transition: "background 0.2s, transform 0.2s",
-              transform: i === idx ? "scale(1.3)" : "scale(1)",
-              padding: 0,
-            }}
-            aria-label={`Go to certification ${i + 1}`}
-          />
+      <div className="cert-spotlights">
+        {featured.map(cert => (
+          <SpotlightCard key={cert._id} cert={cert} onOpen={() => setSelected(cert)} />
         ))}
       </div>
 
+      {(shown.length > 0 || showSeeAll) && (
+        <ul className="cert-grid" aria-label={isPreview ? "Selected certifications" : "All certifications"}>
+          {shown.map(cert => (
+            <li key={cert._id} style={{ display: "flex" }}>
+              <CertTile cert={cert} onOpen={() => setSelected(cert)} />
+            </li>
+          ))}
+          {showSeeAll && (
+            <li style={{ display: "flex" }}>
+              <Link href="/certifications" className="cert-see-all">
+                <span aria-hidden="true" style={{ fontSize: "2rem", color: "#06D001", lineHeight: 1 }}>→</span>
+                <span style={{ color: "#06D001", fontSize: "0.938rem", fontWeight: 700 }}>See all certifications</span>
+                <span style={{ color: "#bcc4ba", fontSize: "0.75rem" }}>View all {certifications.length}</span>
+                <NavProgress label="Loading all certifications" />
+              </Link>
+            </li>
+          )}
+        </ul>
+      )}
+
+      <CertModal cert={selected} isOpen={!!selected} onClose={() => setSelected(null)} />
+
       <style>{`
-        @keyframes certShimmer {
-          0%   { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
+        .cert-spotlights { display: grid; gap: 16px; margin-bottom: 16px; }
+
+        .cert-spot {
+          display: grid;
+          grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
+          background: #00193b;
+          border: 1px solid #059212;
+          border-radius: 14px;
+          overflow: hidden;
+          text-align: left;
         }
-        @media (max-width: 600px) { .cert-card { min-width: 160px !important; } }
-        @media (max-width: 400px) { .cert-card { min-width: 140px !important; } }
+        .cert-spot-stage {
+          position: relative;
+          display: block;
+          width: 100%;
+          aspect-ratio: 1.414 / 1;
+          background: #011428;
+          border: none;
+          border-right: 1px solid #02275b;
+          padding: 0;
+          cursor: zoom-in;
+        }
+        .cert-spot-body {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 10px;
+          padding: clamp(18px, 3vw, 32px);
+          min-width: 0;
+        }
+        .cert-spot-title {
+          color: #ffffff;
+          font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+          font-weight: 700;
+          line-height: 1.3;
+          margin: 0;
+        }
+        .cert-meta { margin: 0; font-size: 0.813rem; color: #bcc4ba; line-height: 1.5; }
+        .cert-meta strong { color: #06D001; font-weight: 600; }
+        .cert-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+        .cert-btn {
+          display: inline-flex; align-items: center; justify-content: center;
+          padding: 9px 18px;
+          border-radius: 7px;
+          font-size: 0.813rem; font-weight: 700;
+          font-family: var(--font-poppins), Poppins, sans-serif;
+          cursor: pointer;
+          text-decoration: none;
+          transition: border-color 0.2s, background 0.2s;
+        }
+        .cert-btn-primary { background: linear-gradient(135deg, #059212, #06D001); color: #ffffff; border: none; }
+        .cert-btn-ghost   { background: transparent; color: #06D001; border: 1px solid #059212; }
+        .cert-btn-ghost:hover { background: #021f40; border-color: #06D001; }
+
+        .cert-grid {
+          list-style: none;
+          margin: 0; padding: 0;
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          gap: 16px;
+        }
+        .cert-tile {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          background: #00193b;
+          border: 1px solid #02275b;
+          border-radius: 10px;
+          overflow: hidden;
+          padding: 0;
+          text-align: left;
+          cursor: pointer;
+          font-family: var(--font-poppins), Poppins, sans-serif;
+          transition: border-color 0.2s;
+        }
+        .cert-tile:hover { border-color: #059212; }
+        .cert-tile-stage {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 1.414 / 1;
+          background: #011428;
+          border-bottom: 1px solid #02275b;
+          flex-shrink: 0;
+        }
+        .cert-tile-body { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px 14px; flex: 1; }
+        .cert-tile-title {
+          color: #ffffff;
+          font-size: 0.875rem;
+          font-weight: 600;
+          line-height: 1.4;
+          margin: 0;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .cert-tile-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; padding-top: 4px; }
+
+        .cert-see-all {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          width: 100%;
+          min-height: 180px;
+          padding: 24px 16px;
+          text-align: center;
+          text-decoration: none;
+          background: #00193b;
+          border: 2px dashed #059212;
+          border-radius: 10px;
+          transition: background 0.2s, border-color 0.2s;
+        }
+        .cert-see-all:hover { background: #021f40; border-color: #06D001; }
+
+        @media (max-width: 760px) {
+          .cert-spot { grid-template-columns: 1fr; }
+          .cert-spot-stage { border-right: none; border-bottom: 1px solid #02275b; }
+        }
+        @media (max-width: 520px) {
+          .cert-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+          .cert-tile-body { padding: 10px; }
+          .cert-tile-title { font-size: 0.8rem; }
+        }
       `}</style>
     </>
+  );
+}
+
+// `as="span"` inside the tile, because a <button> may only hold phrasing content
+function MetaLine({ cert, as: Tag = "p" }) {
+  const date = formatIssueDate(cert.issueDate);
+  if (!cert.issuer && !date) return null;
+  return (
+    <Tag className="cert-meta" style={Tag === "span" ? { display: "block" } : undefined}>
+      {cert.issuer && <strong>{cert.issuer}</strong>}
+      {cert.issuer && date && <br />}
+      {date && <span>Issued {date}</span>}
+    </Tag>
+  );
+}
+
+function Badges({ skills = [], max }) {
+  if (!skills.length) return null;
+  const shown = skills.slice(0, max);
+  return (
+    <>
+      {shown.map(s => <TechBadge key={s} label={s} />)}
+      {skills.length > max && <TechBadge label={`+${skills.length - max}`} variant="outline" />}
+    </>
+  );
+}
+
+function SpotlightCard({ cert, onOpen }) {
+  return (
+    <article className="cert-spot" aria-label={cert.title}>
+      <button
+        type="button"
+        className="cert-spot-stage"
+        onClick={onOpen}
+        aria-label={`View ${cert.title} certificate`}
+      >
+        {cert.imageUrl ? (
+          <Image
+            src={cert.imageUrl}
+            alt=""
+            fill
+            style={{ objectFit: "contain", padding: "12px" }}
+            sizes="(max-width: 760px) 100vw, 460px"
+          />
+        ) : (
+          <CertPlaceholder size={56} />
+        )}
+      </button>
+
+      <div className="cert-spot-body">
+        <h3 className="cert-spot-title">{cert.title}</h3>
+        <MetaLine cert={cert} />
+        {cert.credentialId && (
+          <p className="cert-meta">Credential ID <span style={{ color: "#ffffff", wordBreak: "break-all" }}>{cert.credentialId}</span></p>
+        )}
+        {cert.skills?.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+            <Badges skills={cert.skills} max={6} />
+          </div>
+        )}
+        <div className="cert-actions">
+          <button type="button" className="cert-btn cert-btn-primary" onClick={onOpen}>
+            View certificate
+          </button>
+          {cert.credentialUrl && (
+            <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer" className="cert-btn cert-btn-ghost">
+              Verify credential
+            </a>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function CertTile({ cert, onOpen }) {
+  return (
+    <button
+      type="button"
+      className="cert-tile"
+      onClick={onOpen}
+      aria-label={`${cert.title} — view certificate`}
+    >
+      <span className="cert-tile-stage">
+        {cert.imageUrl ? (
+          <Image
+            src={cert.imageUrl}
+            alt=""
+            fill
+            style={{ objectFit: "contain", padding: "8px" }}
+            sizes="(max-width: 520px) 50vw, 280px"
+          />
+        ) : (
+          <CertPlaceholder />
+        )}
+      </span>
+      <span className="cert-tile-body">
+        <span className="cert-tile-title">{cert.title}</span>
+        <MetaLine cert={cert} as="span" />
+        {cert.skills?.length > 0 && (
+          <span className="cert-tile-badges">
+            <Badges skills={cert.skills} max={3} />
+          </span>
+        )}
+      </span>
+    </button>
   );
 }

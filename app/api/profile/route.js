@@ -1,5 +1,6 @@
 // app/api/profile/route.js
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 
 export async function GET() {
@@ -14,6 +15,9 @@ export async function GET() {
 }
 
 export async function PUT(request) {
+  const denied = await requireAdmin(request);
+  if (denied) return denied;
+
   try {
     const db   = await getDb();
     const body = await request.json();

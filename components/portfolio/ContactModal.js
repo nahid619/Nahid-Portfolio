@@ -8,7 +8,7 @@ import { Modal } from "@/components/shared";
 export default function ContactModal({ isOpen, onClose, contactLinks = [] }) {
   // Only links with "contact-modal" in their showIn array
   return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="320px">
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="320px" label="Contact options">
       <h2 style={{ color:"white", fontSize:"1.1rem", fontWeight:700, margin:"0 0 4px" }}>Get in touch</h2>
       <p style={{ color:"#bcc4ba", fontSize:"0.813rem", margin:"0 0 20px" }}>
         Choose how you&apos;d like to reach Nahid

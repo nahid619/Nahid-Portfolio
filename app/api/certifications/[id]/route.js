@@ -1,15 +1,20 @@
 // app/api/certifications/[id]/route.js
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { normalizeCert } from "@/lib/certFields";
 
 // PUT /api/certifications/[id]
 export async function PUT(request, { params }) {
+  const denied = await requireAdmin(request);
+  if (denied) return denied;
+
   try {
     const db = await getDb();
     const { id } = await params;
     const body = await request.json();
-    const { _id, ...updateData } = body;
+    const updateData = normalizeCert(body, { partial: true });
 
     const result = await db
       .collection("certifications")
@@ -27,6 +32,9 @@ export async function PUT(request, { params }) {
 
 // DELETE /api/certifications/[id]
 export async function DELETE(request, { params }) {
+  const denied = await requireAdmin(request);
+  if (denied) return denied;
+
   try {
     const db = await getDb();
     const { id } = await params;

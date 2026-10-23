@@ -14,7 +14,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { TabGroup, TechBadge, NavProgress } from "@/components/shared";
+import { TabGroup, TechBadge, NavProgress, CardButton } from "@/components/shared";
 import ProjectModal from "./ProjectModal";
 
 export default function ProjectsClient({
@@ -46,7 +46,7 @@ export default function ProjectsClient({
         {visible.map((project, i) => (
           <div
             key={`${activeTab}-${project._id}`}
-            className="project-card"
+            className="project-card kb-card"
             style={{ animationDelay: `${i * 120}ms` }}
             onClick={() => setSelected(project)}
             onMouseEnter={e => {
@@ -68,7 +68,7 @@ export default function ProjectsClient({
             }}>
               {project.projectImageUrl ? (
                 <Image
-                  src={project.projectImageUrl} alt={project.title}
+                  src={project.projectImageUrl} alt=""
                   fill style={{ objectFit: "cover" }}
                   sizes="(max-width: 600px) 100vw, 300px"
                 />
@@ -80,7 +80,7 @@ export default function ProjectsClient({
             </div>
             <div style={{ padding: "12px 14px" }}>
               <h3 style={{ color: "white", fontSize: "0.938rem", fontWeight: 700, margin: "0 0 8px" }}>
-                {project.title}
+                <CardButton onClick={() => setSelected(project)}>{project.title}</CardButton>
               </h3>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
                 {project.techStack?.slice(0, 4).map(t => <TechBadge key={t} label={t} />)}

@@ -7,10 +7,14 @@ import Image from "next/image";
 import { useFetch } from "@/hooks/useFetch";
 import {
   AdminSection, AddButton, AdminTable, AdminTr, AdminTd,
-  EditBtn, DeleteBtn, AdminForm, FormField, AdminInput, AlertBox,
+  EditBtn, DeleteBtn, AdminForm, FormField, FormRow, AdminInput, AlertBox,
 } from "./AdminUI";
 
-const EMPTY = { title: "", imageUrl: "", imagePublicId: "", order: 0 };
+const EMPTY = {
+  title: "", issuer: "", issueDate: "", credentialId: "", credentialUrl: "",
+  skills: "", featured: false,
+  imageUrl: "", imagePublicId: "", order: 0,
+};
 
 function CertForm({ form, setForm, onSubmit, saving, onCancel, isNew }) {
   const [uploading, setUploading] = useState(false);
@@ -46,6 +50,33 @@ function CertForm({ form, setForm, onSubmit, saving, onCancel, isNew }) {
       <FormField label="Certificate Title">
         <AdminInput value={form.title} onChange={set("title")} placeholder="SQA Manual and Automation Testing" required />
       </FormField>
+      <FormRow>
+        <FormField label="Issuer">
+          <AdminInput value={form.issuer} onChange={set("issuer")} placeholder="Salesforce" />
+        </FormField>
+        <FormField label="Issue Date">
+          <AdminInput value={form.issueDate} onChange={set("issueDate")} type="month" />
+        </FormField>
+      </FormRow>
+      <FormRow>
+        <FormField label="Credential ID">
+          <AdminInput value={form.credentialId} onChange={set("credentialId")} placeholder="Optional" />
+        </FormField>
+        <FormField label="Verification URL">
+          <AdminInput value={form.credentialUrl} onChange={set("credentialUrl")} type="url" placeholder="https://trailhead.salesforce.com/credentials/…" />
+        </FormField>
+      </FormRow>
+      <FormField label="Skills Covered (comma-separated, up to 8)">
+        <AdminInput value={form.skills} onChange={set("skills")} placeholder="Agentforce, Prompt Builder, Data Cloud" />
+      </FormField>
+      <FormField label="">
+        <label style={{ display: "flex", alignItems: "center", gap: "8px", color: "#bcc4ba", fontSize: "0.875rem", cursor: "pointer" }}>
+          <input type="checkbox" checked={!!form.featured}
+            onChange={e => setForm(f => ({ ...f, featured: e.target.checked }))}
+          />
+          Feature this certification (the large card at the top of the section; if several are ticked, the one with the lowest display order wins)
+        </label>
+      </FormField>
       <FormField label="Certificate Image">
         <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
           {form.imageUrl && (
@@ -61,7 +92,7 @@ function CertForm({ form, setForm, onSubmit, saving, onCancel, isNew }) {
           <AdminInput value={form.imageUrl} onChange={set("imageUrl")} placeholder="or paste image URL" />
         </div>
       </FormField>
-      <FormField label="Display Order">
+      <FormField label="Display Order (lower = first; after the featured one, the first 3 appear on the homepage)">
         <AdminInput value={form.order} onChange={set("order")} type="number" placeholder="1" />
       </FormField>
     </AdminForm>
@@ -76,7 +107,17 @@ export default function CertManager() {
   const [msg, setMsg]             = useState({ type: "", text: "" });
 
   function openAdd() { setEditingId("new"); setForm(EMPTY); setMsg({ type: "", text: "" }); }
-  function openEdit(c) { setEditingId(c._id); setForm({ ...c, imagePublicId: c.imagePublicId || "" }); setMsg({ type: "", text: "" }); }
+  function openEdit(c) {
+    setEditingId(c._id);
+    setForm({
+      ...EMPTY,
+      ...c,
+      imagePublicId: c.imagePublicId || "",
+      skills: Array.isArray(c.skills) ? c.skills.join(", ") : (c.skills || ""),
+      featured: !!c.featured,
+    });
+    setMsg({ type: "", text: "" });
+  }
   function cancel() { setEditingId(null); setForm(EMPTY); }
 
   async function handleSubmit(e) {
@@ -86,7 +127,11 @@ export default function CertManager() {
       const isNew  = editingId === "new";
       const url    = isNew ? "/api/certifications" : `/api/certifications/${editingId}`;
       const method = isNew ? "POST" : "PUT";
-      const res    = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, order: Number(form.order) }) });
+      const res    = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+        ...form,
+        order:  Number(form.order),
+        skills: form.skills ? form.skills.split(",").map(t => t.trim()).filter(Boolean) : [],
+      }) });
       if (res.ok) { setMsg({ type: "success", text: isNew ? "Added!" : "Updated!" }); refetch(); cancel(); }
       else { const d = await res.json(); setMsg({ type: "error", text: d.message || "Failed." }); }
     } catch { setMsg({ type: "error", text: "Network error." }); }
@@ -109,7 +154,7 @@ export default function CertManager() {
         </div>
       )}
 
-      <AdminTable headers={["Preview", "Title", "Order", "Actions"]}>
+      <AdminTable headers={["Preview", "Title", "Issuer", "Order", "Actions"]}>
         {loading
           ? <AdminTr><AdminTd muted>Loading…</AdminTd></AdminTr>
           : certs?.map(c => (
@@ -121,7 +166,8 @@ export default function CertManager() {
                       : <span style={{ fontSize: "1.25rem" }}>📜</span>
                     }
                   </AdminTd>
-                  <AdminTd>{c.title}</AdminTd>
+                  <AdminTd>{c.featured ? "★ " : ""}{c.title}</AdminTd>
+                  <AdminTd muted>{c.issuer || "—"}</AdminTd>
                   <AdminTd muted>{c.order}</AdminTd>
                   <AdminTd>
                     <EditBtn onClick={() => editingId === c._id ? cancel() : openEdit(c)} />
@@ -130,7 +176,7 @@ export default function CertManager() {
                 </AdminTr>
                 {editingId === c._id && (
                   <tr>
-                    <td colSpan={4} style={{ padding: 0 }}>
+                    <td colSpan={5} style={{ padding: 0 }}>
                       <div style={{ padding: "1rem", background: "#011428", borderTop: "2px solid #059212", borderBottom: "1px solid #02275b" }}>
                         <CertForm form={form} setForm={setForm} onSubmit={handleSubmit} saving={saving} onCancel={cancel} isNew={false} />
                       </div>

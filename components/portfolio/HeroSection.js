@@ -162,12 +162,13 @@ export default function HeroSection({ profile, heroLinks = [] }) {
               {/* Contact Me — client component */}
               <HeroContactButton />
 
-              {/* Download CV — plain anchor, no JS handlers needed */}
+              {/* Download CV — goes through /api/cv-download like the About
+                  button. Linking straight to the Cloudinary PDF bypassed the
+                  proxy that exists to avoid Cloudinary's 401 on PDF delivery. */}
               <a
-                href={profile?.cvFileUrl || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={profile?.cvFileUrl ? "/api/cv-download" : undefined}
                 className="hero-cv-btn"
+                aria-disabled={profile?.cvFileUrl ? undefined : "true"}
                 style={{
                   opacity: profile?.cvFileUrl ? 1 : 0.5,
                   pointerEvents: profile?.cvFileUrl ? "auto" : "none",

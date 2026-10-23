@@ -1,0 +1,34 @@
+// proxy.js
+// Next.js 16 renamed the `middleware` file convention to `proxy`
+// (middleware.js still runs, but is deprecated). Behaviour is unchanged:
+// this only redirects the admin PAGES. API routes are protected inside
+// each Route Handler via lib/auth.js — the proxy is not the security
+// boundary for data.
+
+import { getToken } from "next-auth/jwt";
+import { NextResponse } from "next/server";
+
+export async function proxy(request) {
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+
+  const { pathname } = request.nextUrl;
+
+  // Protect /admin/dashboard — redirect to login if no session
+  if (pathname.startsWith("/admin/dashboard") && !token) {
+    return NextResponse.redirect(new URL("/admin", request.url));
+  }
+
+  // Already logged in visiting login page → send to dashboard
+  if (pathname === "/admin" && token) {
+    return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/admin", "/admin/dashboard/:path*"],
+};

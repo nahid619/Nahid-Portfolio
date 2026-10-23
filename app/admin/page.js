@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -143,7 +144,7 @@ export default function AdminLoginPage() {
         </form>
 
         <p style={styles.backLink}>
-          <a href="/" style={styles.backAnchor}>← Back to Portfolio</a>
+          <Link href="/" style={styles.backAnchor}>← Back to Portfolio</Link>
         </p>
       </div>
 
